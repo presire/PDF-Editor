@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF編集ツール</title>
+    <script src="js/pdf-lib.min.js"></script>
+    <link rel="stylesheet" href="css/tailwind.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        .drop-zone {
+            transition: all 0.3s ease;
+        }
+        .drop-zone.drag-over {
+            background-color: #EFF6FF;
+            border-color: #3B82F6;
+            transform: scale(1.02);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- ヘッダー -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 mb-2">
+                PDF編集ツール
+            </h1>
+            <p class="text-gray-600">ページの挿入・削除を簡単に実行</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 左ペイン: ファイルアップロード -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- 挿入先PDFファイル -->
+                <div class="glass-effect rounded-xl shadow-lg p-6 border border-gray-200 fade-in">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-800">挿入先PDFファイル</h2>
+                    </div>
+                    
+                    <div id="targetDropZone" class="drop-zone border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50">
+                        <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p class="text-sm text-gray-600 mb-2">ドラッグ&ドロップ</p>
+                        <p class="text-xs text-gray-500 mb-3">または</p>
+                        <input type="file" id="targetPdfInput" accept="application/pdf" class="hidden">
+                        <label for="targetPdfInput" class="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 cursor-pointer transition">
+                            ファイルを選択
+                        </label>
+                    </div>
+                    <div id="targetPdfInfo" class="mt-4 text-sm"></div>
+                </div>
+
+                <!-- 挿入元PDFファイル -->
+                <div id="sourceSection" class="glass-effect rounded-xl shadow-lg p-6 border border-gray-200 fade-in hidden">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
+                        <h2 class="text-lg font-semibold text-gray-800">挿入元PDFファイル</h2>
+                    </div>
+                    
+                    <div id="sourceDropZone" class="drop-zone border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-green-400 hover:bg-green-50">
+                        <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <p class="text-sm text-gray-600 mb-2">ドラッグ&ドロップ</p>
+                        <p class="text-xs text-gray-500 mb-3">または</p>
+                        <input type="file" id="sourcePdfInput" accept="application/pdf" class="hidden">
+                        <label for="sourcePdfInput" class="inline-block px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 cursor-pointer transition">
+                            ファイルを選択
+                        </label>
+                    </div>
+                    <div id="sourcePdfInfo" class="mt-4 text-sm"></div>
+                </div>
+            </div>
+
+            <!-- 中央・右ペイン: 操作設定と結果 -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- 操作選択 -->
+                <div class="glass-effect rounded-xl shadow-lg p-6 border border-gray-200 fade-in">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">操作の選択</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button id="insertBtn" class="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-1">
+                            <div class="flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span class="font-semibold">ページ挿入</span>
+                            </div>
+                        </button>
+                        <button id="deleteBtn" class="group relative overflow-hidden px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-1">
+                            <div class="flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                <span class="font-semibold">ページ削除</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 挿入設定 -->
+                <div id="insertSection" class="glass-effect rounded-xl shadow-lg p-6 border border-gray-200 fade-in hidden">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">挿入設定</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">挿入元のページ番号</label>
+                            <input type="text" id="insertSourcePages" placeholder="例: 1,3,5 または 1-3" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            <p class="mt-2 text-xs text-gray-500">単一ページ（例: 1）、複数ページ（例: 1,3,5）、範囲指定（例: 1-3）が可能です</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">挿入先の位置</label>
+                            <input type="number" id="insertPosition" min="0" placeholder="0 = 最初に挿入" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                            <p class="mt-2 text-xs text-gray-500">0を指定すると最初に挿入、1を指定すると1ページ目の後に挿入されます</p>
+                        </div>
+
+                        <button id="executeInsert" class="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            挿入を実行
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 削除設定 -->
+                <div id="deleteSection" class="glass-effect rounded-xl shadow-lg p-6 border border-gray-200 fade-in hidden">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">削除設定</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">削除するページ番号</label>
+                            <input type="text" id="deletePages" placeholder="例: 1,3,5 または 1-3" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition">
+                            <p class="mt-2 text-xs text-gray-500">単一ページ（例: 1）、複数ページ（例: 1,3,5）、範囲指定（例: 1-3）が可能です</p>
+                        </div>
+
+                        <button id="executeDelete" class="w-full px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            削除を実行
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 結果表示 -->
+                <div id="resultSection" class="glass-effect rounded-xl shadow-lg p-6 border border-gray-200 fade-in hidden">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">処理結果</h2>
+                    <div id="resultMessage" class="mb-4 p-4 rounded-lg"></div>
+                    <button id="downloadBtn" class="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all duration-300 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 hidden">
+                        <div class="flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            編集済みPDFをダウンロード
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ステータスメッセージ -->
+    <div id="statusMessage" class="fixed bottom-6 right-6 px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 hidden">
+        <div class="flex items-center">
+            <div id="statusIcon" class="mr-3"></div>
+            <span id="statusText" class="font-medium"></span>
+        </div>
+    </div>
+
+    <script>
+        const { PDFDocument } = PDFLib;
+
+        let targetPdfBytes = null;
+        let targetPdfDoc = null;
+        let sourcePdfBytes = null;
+        let sourcePdfDoc = null;
+        let resultPdfBytes = null;
+
+        // ステータスメッセージ表示
+        function showStatus(message, type = 'info', duration = 3000) {
+            const statusEl = document.getElementById('statusMessage');
+            const statusText = document.getElementById('statusText');
+            const statusIcon = document.getElementById('statusIcon');
+            
+            statusText.textContent = message;
+            
+            // アイコンとスタイルを設定
+            if (type === 'success') {
+                statusEl.className = 'fixed bottom-6 right-6 px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 bg-green-600 text-white';
+                statusIcon.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>';
+            } else if (type === 'error') {
+                statusEl.className = 'fixed bottom-6 right-6 px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 bg-red-600 text-white';
+                statusIcon.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>';
+            } else {
+                statusEl.className = 'fixed bottom-6 right-6 px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-300 bg-blue-600 text-white';
+                statusIcon.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+            }
+            
+            statusEl.classList.remove('hidden');
+            statusEl.style.transform = 'translateY(0)';
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    statusEl.style.transform = 'translateY(200%)';
+                    setTimeout(() => statusEl.classList.add('hidden'), 300);
+                }, duration);
+            }
+        }
+
+        // ページ番号をパース
+        function parsePageNumbers(input, maxPage) {
+            const pages = new Set();
+            const parts = input.split(',').map(p => p.trim());
+            
+            for (const part of parts) {
+                if (part.includes('-')) {
+                    const [start, end] = part.split('-').map(n => parseInt(n.trim()));
+                    if (isNaN(start) || isNaN(end) || start < 1 || end > maxPage || start > end) {
+                        throw new Error(`無効な範囲指定: ${part}`);
+                    }
+                    for (let i = start; i <= end; i++) {
+                        pages.add(i);
+                    }
+                } else {
+                    const pageNum = parseInt(part);
+                    if (isNaN(pageNum) || pageNum < 1 || pageNum > maxPage) {
+                        throw new Error(`無効なページ番号: ${part}`);
+                    }
+                    pages.add(pageNum);
+                }
+            }
+            
+            return Array.from(pages).sort((a, b) => a - b);
+        }
+
+        // ドラッグ&ドロップ設定
+        function setupDropZone(dropZoneId, inputId, callback) {
+            const dropZone = document.getElementById(dropZoneId);
+            const fileInput = document.getElementById(inputId);
+
+            // クリックでファイル選択
+            dropZone.addEventListener('click', (e) => {
+                if (e.target !== fileInput && !e.target.closest('label')) {
+                    fileInput.click();
+                }
+            });
+
+            // ドラッグオーバー
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+
+            // ドラッグ離脱
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over');
+            });
+
+            // ドロップ
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type === 'application/pdf') {
+                    callback(files[0]);
+                } else {
+                    showStatus('PDFファイルをドロップしてください', 'error');
+                }
+            });
+
+            // ファイル選択
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    callback(file);
+                }
+            });
+        }
+
+        // 挿入先PDF処理
+        async function handleTargetPdf(file) {
+            try {
+                showStatus('PDFを読み込み中...', 'info');
+                targetPdfBytes = await file.arrayBuffer();
+                targetPdfDoc = await PDFDocument.load(targetPdfBytes);
+                const pageCount = targetPdfDoc.getPageCount();
+                
+                document.getElementById('targetPdfInfo').innerHTML = 
+                    `<div class="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <div class="flex-1">
+                            <p class="font-medium text-green-800">${file.name}</p>
+                            <p class="text-xs text-green-600">${pageCount}ページ</p>
+                        </div>
+                    </div>`;
+                
+                showStatus('挿入先PDFを読み込みました', 'success');
+            } catch (error) {
+                document.getElementById('targetPdfInfo').innerHTML = 
+                    `<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                        PDFの読み込みに失敗しました
+                    </div>`;
+                showStatus('エラーが発生しました', 'error');
+                console.error(error);
+            }
+        }
+
+        // 挿入元PDF処理
+        async function handleSourcePdf(file) {
+            try {
+                showStatus('挿入元PDFを読み込み中...', 'info');
+                sourcePdfBytes = await file.arrayBuffer();
+                sourcePdfDoc = await PDFDocument.load(sourcePdfBytes);
+                const pageCount = sourcePdfDoc.getPageCount();
+                
+                document.getElementById('sourcePdfInfo').innerHTML = 
+                    `<div class="flex items-center p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <div class="flex-1">
+                            <p class="font-medium text-green-800">${file.name}</p>
+                            <p class="text-xs text-green-600">${pageCount}ページ</p>
+                        </div>
+                    </div>`;
+                
+                showStatus('挿入元PDFを読み込みました', 'success');
+            } catch (error) {
+                document.getElementById('sourcePdfInfo').innerHTML = 
+                    `<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                        PDFの読み込みに失敗しました
+                    </div>`;
+                showStatus('エラーが発生しました', 'error');
+                console.error(error);
+            }
+        }
+
+        // ドロップゾーン設定
+        setupDropZone('targetDropZone', 'targetPdfInput', handleTargetPdf);
+        setupDropZone('sourceDropZone', 'sourcePdfInput', handleSourcePdf);
+
+        // 操作選択ボタン
+        document.getElementById('insertBtn').addEventListener('click', () => {
+            document.getElementById('insertSection').classList.remove('hidden');
+            document.getElementById('deleteSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.add('hidden');
+            document.getElementById('sourceSection').classList.remove('hidden');
+        });
+
+        document.getElementById('deleteBtn').addEventListener('click', () => {
+            document.getElementById('deleteSection').classList.remove('hidden');
+            document.getElementById('insertSection').classList.add('hidden');
+            document.getElementById('resultSection').classList.add('hidden');
+        });
+
+        // ページ挿入実行
+        document.getElementById('executeInsert').addEventListener('click', async () => {
+            if (!targetPdfDoc) {
+                showStatus('挿入先PDFファイルを読み込んでください', 'error');
+                return;
+            }
+            if (!sourcePdfDoc) {
+                showStatus('挿入元PDFファイルを読み込んでください', 'error');
+                return;
+            }
+
+            const sourcePagesInput = document.getElementById('insertSourcePages').value.trim();
+            const insertPosition = parseInt(document.getElementById('insertPosition').value) || 0;
+
+            if (!sourcePagesInput) {
+                showStatus('挿入するページ番号を指定してください', 'error');
+                return;
+            }
+
+            try {
+                showStatus('ページを挿入中...', 'info', 5000);
+                
+                const sourcePages = parsePageNumbers(sourcePagesInput, sourcePdfDoc.getPageCount());
+                const newPdf = await PDFDocument.create();
+                
+                const targetPageCount = targetPdfDoc.getPageCount();
+                const copyUpTo = Math.min(insertPosition, targetPageCount);
+                
+                if (copyUpTo > 0) {
+                    const copiedPages = await newPdf.copyPages(targetPdfDoc, Array.from({length: copyUpTo}, (_, i) => i));
+                    copiedPages.forEach(page => newPdf.addPage(page));
+                }
+                
+                const pagesToInsert = sourcePages.map(p => p - 1);
+                const insertedPages = await newPdf.copyPages(sourcePdfDoc, pagesToInsert);
+                insertedPages.forEach(page => newPdf.addPage(page));
+                
+                if (copyUpTo < targetPageCount) {
+                    const remainingPages = await newPdf.copyPages(
+                        targetPdfDoc, 
+                        Array.from({length: targetPageCount - copyUpTo}, (_, i) => i + copyUpTo)
+                    );
+                    remainingPages.forEach(page => newPdf.addPage(page));
+                }
+                
+                resultPdfBytes = await newPdf.save();
+                
+                document.getElementById('resultMessage').innerHTML = 
+                    `<div class="bg-green-50 border-l-4 border-green-500 p-4">
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-green-800">処理完了</p>
+                                <p class="text-sm text-green-700">${sourcePages.length}ページを位置${insertPosition}の後に挿入しました。総ページ数: ${newPdf.getPageCount()}ページ</p>
+                            </div>
+                        </div>
+                    </div>`;
+                document.getElementById('resultSection').classList.remove('hidden');
+                document.getElementById('downloadBtn').classList.remove('hidden');
+                
+                showStatus('挿入が完了しました', 'success');
+            } catch (error) {
+                document.getElementById('resultMessage').innerHTML = 
+                    `<div class="bg-red-50 border-l-4 border-red-500 p-4">
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-red-800">エラー</p>
+                                <p class="text-sm text-red-700">${error.message}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                document.getElementById('resultSection').classList.remove('hidden');
+                document.getElementById('downloadBtn').classList.add('hidden');
+                showStatus('エラーが発生しました', 'error');
+                console.error(error);
+            }
+        });
+
+        // ページ削除実行
+        document.getElementById('executeDelete').addEventListener('click', async () => {
+            if (!targetPdfDoc) {
+                showStatus('挿入先PDFファイルを読み込んでください', 'error');
+                return;
+            }
+
+            const deletePagesInput = document.getElementById('deletePages').value.trim();
+
+            if (!deletePagesInput) {
+                showStatus('削除するページ番号を指定してください', 'error');
+                return;
+            }
+
+            try {
+                showStatus('ページを削除中...', 'info', 5000);
+                
+                const targetPageCount = targetPdfDoc.getPageCount();
+                const pagesToDelete = parsePageNumbers(deletePagesInput, targetPageCount);
+                const deleteSet = new Set(pagesToDelete);
+                
+                const newPdf = await PDFDocument.create();
+                const pagesToKeep = [];
+                
+                for (let i = 1; i <= targetPageCount; i++) {
+                    if (!deleteSet.has(i)) {
+                        pagesToKeep.push(i - 1);
+                    }
+                }
+                
+                if (pagesToKeep.length === 0) {
+                    throw new Error('すべてのページを削除することはできません');
+                }
+                
+                const copiedPages = await newPdf.copyPages(targetPdfDoc, pagesToKeep);
+                copiedPages.forEach(page => newPdf.addPage(page));
+                
+                resultPdfBytes = await newPdf.save();
+                
+                document.getElementById('resultMessage').innerHTML = 
+                    `<div class="bg-green-50 border-l-4 border-green-500 p-4">
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-green-800">処理完了</p>
+                                <p class="text-sm text-green-700">${pagesToDelete.length}ページを削除しました。残りページ数: ${newPdf.getPageCount()}ページ</p>
+                            </div>
+                        </div>
+                    </div>`;
+                document.getElementById('resultSection').classList.remove('hidden');
+                document.getElementById('downloadBtn').classList.remove('hidden');
+                
+                showStatus('削除が完了しました', 'success');
+            } catch (error) {
+                document.getElementById('resultMessage').innerHTML = 
+                    `<div class="bg-red-50 border-l-4 border-red-500 p-4">
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-red-800">エラー</p>
+                                <p class="text-sm text-red-700">${error.message}</p>
+                            </div>
+                        </div>
+                    </div>`;
+                document.getElementById('resultSection').classList.remove('hidden');
+                document.getElementById('downloadBtn').classList.add('hidden');
+                showStatus('エラーが発生しました', 'error');
+                console.error(error);
+            }
+        });
+
+        // ダウンロードボタン
+        document.getElementById('downloadBtn').addEventListener('click', async () => {
+            if (!resultPdfBytes) {
+                showStatus('ダウンロードするPDFがありません', 'error');
+                return;
+            }
+
+            const blob = new Blob([resultPdfBytes], { type: 'application/pdf' });
+            const fileName = `edited_${Date.now()}.pdf`;
+
+            // File System Access API がサポートされている場合
+            if ('showSaveFilePicker' in window) {
+                try {
+                    const fileHandle = await window.showSaveFilePicker({
+                        suggestedName: fileName,
+                        types: [{
+                            description: 'PDF Files',
+                            accept: { 'application/pdf': ['.pdf'] }
+                        }]
+                    });
+
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+
+                    showStatus('PDFを保存しました', 'success');
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        console.error('保存エラー:', error);
+                        showStatus('保存に失敗しました', 'error');
+                    }
+                }
+            } else {
+                // フォールバック: 従来のダウンロード方法
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showStatus('ダウンロードを開始しました', 'success');
+            }
+        });
+    </script>
+</body>
+</html>
