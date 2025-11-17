@@ -1,114 +1,113 @@
-# PDF編集ツール
+# PDF Editor Tool
 
-> ブラウザで完結するセキュアなPDFページ編集アプリケーション
+> Secure PDF Page Editing Application That Works Entirely in Your Browser
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)  
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?logo=tailwind-css)](https://tailwindcss.com)  
 [![pdf-lib](https://img.shields.io/badge/pdf--lib-latest-red)](https://pdf-lib.js.org/)  
 
-## 目次
+## Table of Contents
 
-- [概要](#概要)
-- [主な機能](#主な機能)
-- [ファイル構成](#ファイル構成)
-- [セットアップ](#セットアップ)
-- [使用方法](#使用方法)
-  - [ページ削除](#ページ削除)
-  - [ページ挿入](#ページ挿入)
-- [技術仕様](#技術仕様)
-- [ブラウザ互換性](#ブラウザ互換性)
-- [セキュリティについて](#セキュリティについて)
-- [トラブルシューティング](#トラブルシューティング)
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [File Structure](#file-structure)
+- [Setup](#setup)
+- [How to Use](#how-to-use)
+  - [Deleting Pages](#deleting-pages)
+  - [Inserting Pages](#inserting-pages)
+- [Technical Specifications](#technical-specifications)
+- [Browser Compatibility](#browser-compatibility)
+- [Security](#security)
+- [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
-- [ライセンス](#ライセンス)
-- [更新履歴](#更新履歴)
+- [License](#license)
+- [Change Log](#change-log)
 
-## 概要
+## Overview
 
-このツールは、Webブラウザ上で動作するPDFページ編集アプリケーションです。  
-サーバへのアップロードが不要で、クライアント側で完結するため、セキュアな環境でPDFファイルのページ挿入および削除が可能です。  
+This tool is a PDF page editing application that runs in your web browser. Since no server upload is required and all processing is completed client-side, you can insert and delete PDF file pages in a secure environment.
 
-### 特徴
+### Features
 
-- 🔒 **完全クライアントサイド**: ファイルがサーバーに送信されることはなく、すべてブラウザ内で処理されます
-- 🚀 **高速処理**: pdf-libによる効率的なPDF操作
-- 🎨 **モダンなUI**: Tailwind CSSを使用した直感的で洗練されたデザイン
-- 📱 **レスポンシブ対応**: デスクトップからタブレットまで、様々な画面サイズに対応
-- 🖱️ **ドラッグ&ドロップ**: ファイル選択がスムーズで快適な操作性
+- 🔒 **Completely Client-Side**: Files are never sent to a server; all processing happens within your browser
+- 🚀 **Fast Processing**: Efficient PDF manipulation powered by pdf-lib
+- 🎨 **Modern UI**: Intuitive and sophisticated design using Tailwind CSS
+- 📱 **Responsive Design**: Works across various screen sizes from desktop to tablet
+- 🖱️ **Drag & Drop**: Smooth and comfortable file selection experience
 
-## 主な機能
+## Key Features
 
-### ページ挿入機能
-- ✅ 単一ページ挿入（例: `1`）
-- ✅ 複数ページ挿入（例: `1,3,5`）
-- ✅ 範囲指定挿入（例: `1-3`）
-- ✅ 柔軟な挿入位置の指定
-  - `0`を指定すると最初に挿入
-  - `1`を指定すると1ページ目の後に挿入
-- ✅ 異なるPDFファイルからのページ挿入
+### Page Insertion
+- ✅ Insert single page (e.g., `1`)
+- ✅ Insert multiple pages (e.g., `1,3,5`)
+- ✅ Insert page ranges (e.g., `1-3`)
+- ✅ Flexible insertion position specification
+  - Specify `0` to insert at the beginning
+  - Specify `1` to insert after page 1
+- ✅ Insert pages from different PDF files
 
-### ページ削除機能
-- ✅ 単一ページ削除（例: `2`）
-- ✅ 複数ページ削除（例: `1,3,5`）
-- ✅ 範囲指定削除（例: `1-3`）
-- ✅ 最低1ページは保持（安全機能）
+### Page Deletion
+- ✅ Delete single page (e.g., `2`)
+- ✅ Delete multiple pages (e.g., `1,3,5`)
+- ✅ Delete page ranges (e.g., `1-3`)
+- ✅ Maintain at least 1 page (safety feature)
 
 ### UI/UX
-- ✅ ドラッグ&ドロップによるファイル読み込み
-- ✅ リアルタイムのファイル情報表示
-- ✅ 直感的なページ番号指定
-- ✅ File System Access APIによる保存先選択（対応ブラウザ）
-- ✅ エラーハンドリングと詳細なエラーメッセージ
+- ✅ Drag & drop file loading
+- ✅ Real-time file information display
+- ✅ Intuitive page number specification
+- ✅ File System Access API for save location selection (supported browsers)
+- ✅ Error handling with detailed error messages
 
-## ファイル構成
+## File Structure
 
 ```
-📁 プロジェクトルート
-├── 📄 pdf-editor.html           # メインHTMLファイル
-├── 📄 README.md                 # このファイル
+📁 Project Root
+├── 📄 PDF-Editor.html           # Main HTML file
+├── 📄 README.md                 # This file
 ├── 📁 css/
 │   └── 📄 tailwind.css          # Tailwind CSS
 ├── 📁 js/
-│   └── 📄 pdf-lib.min.js        # PDF操作ライブラリ
+│   └── 📄 pdf-lib.min.js        # PDF manipulation library
 └── 📁 img/
-    ├── 📄 Delete.png            # ページ削除画面のスクリーンショット
-    └── 📄 Insert.png            # ページ挿入画面のスクリーンショット
+    ├── 📄 Delete.png            # Page deletion screen screenshot
+    └── 📄 Insert.png            # Page insertion screen screenshot
 ```
 
-### 各ファイルの説明
+### File Descriptions
 
-#### `pdf-editor.html`
-メインのHTMLファイル。PDF編集ロジック、UI、イベントハンドリングがすべて含まれています。
+#### `PDF-Editor.html`
+Main HTML file containing all PDF editing logic, UI, and event handling.
 
 #### `css/tailwind.css`
-Tailwind CSSのスタイルシート。レスポンシブなレイアウト、ユーティリティクラスを提供します。
+Tailwind CSS stylesheet providing responsive layouts and utility classes.
 
 #### `js/pdf-lib.min.js`
-pdf-libライブラリ。PDFの読み込み、ページ操作、保存機能を提供します。
+pdf-lib library providing PDF loading, page manipulation, and save functionality.
 
 #### `img/`
-スクリーンショット画像を格納するディレクトリ。
+Directory containing screenshot images.
 
-## セットアップ
+## Setup
 
-### 必要な環境
+### Requirements
 
-- モダンなWebブラウザ
-  - **推奨**: Chrome 90+、Edge 90+、Opera 76+
-  - **制限付き**: Firefox 88+（File System Access API非対応）
-  - **非推奨**: Safari（互換性の問題がある場合があります）
+- Modern web browser
+  - **Recommended**: Chrome 90+, Edge 90+, Opera 76+
+  - **Limited Support**: Firefox 88+ (File System Access API not supported)
+  - **Not Recommended**: Safari (may have compatibility issues)
 
-### インストール手順
+### Installation Steps
 
-1. **ファイルのダウンロード**
+1. **Download Files**
    
-   すべてのファイルをダウンロードし、以下のフォルダ構造を保持してください。
+   Download all files and maintain the following folder structure.
 
-2. **ファイル配置**
+2. **File Placement**
    
    ```
    your-folder/
-   ├── pdf-editor.html
+   ├── PDF-Editor.html
    ├── css/
    │   └── tailwind.css
    ├── js/
@@ -118,396 +117,401 @@ pdf-libライブラリ。PDFの読み込み、ページ操作、保存機能を�
        └── Insert.png
    ```
 
-3. **ブラウザで開く**
+3. **Open in Browser**
    
-   `pdf-editor.html` をダブルクリックするか、ブラウザにドラッグ&ドロップしてください。
+   Double-click `PDF-Editor.html` or drag and drop it into your browser.  
+<br>
 
-> **注意**:  
-> ローカルファイルとして開く場合、一部のブラウザでファイル選択機能に制限がある場合があります。  
-> その場合は、簡易的なHTTPサーバーを使用してください。
+> **Note**:  
+> When opening as a local file, some browsers may have restrictions on file selection functionality.  
+> In that case, use a simple HTTP server.
+
+<br>
 
 ```bash
-# Pythonの簡易HTTPサーバーを使用する例
+# Example using Python's simple HTTP server
 python -m http.server 8000
-# ブラウザで http://localhost:8000/pdf-editor.html にアクセス
+# Access http://localhost:8000/PDF-Editor.html in your browser
 ```
 
-## 使用方法
+<br>
 
-### ページ削除
+## How to Use
 
-#### ステップ1: ファイルの選択
-1. **挿入先PDFファイルエリア**をクリック、またはファイルをドラッグ&ドロップ
-2. 編集対象のPDFファイルを選択
-3. ファイル情報（名前、サイズ）が表示されます
+### Deleting Pages
 
-#### ステップ2: 削除モードの選択
-1. 「**ページ削除**」ボタンをクリック
-2. 削除用のUIが表示されます
+#### Step 1: Select File
+1. Click the **Target PDF File** area or drag and drop a file
+2. Select the PDF file you want to edit
+3. File information (name, size) will be displayed
 
-#### ステップ3: ページ番号の指定
+#### Step 2: Select Delete Mode
+1. Click the **Delete Pages** button
+2. The deletion UI will be displayed
 
-削除したいページ番号を以下の形式で入力：
+#### Step 3: Specify Page Numbers
 
-**単一ページの削除**
+Enter the page numbers you want to delete in the following formats:
+
+**Deleting a Single Page**
 ```
 2
 ```
-→ 2ページ目のみを削除
+→ Deletes only page 2
 
-**複数ページの削除**
+**Deleting Multiple Pages**
 ```
 1,3,5
 ```
-→ 1、3、5ページ目を削除
+→ Deletes pages 1, 3, and 5
 
-**範囲指定の削除**
+**Deleting a Range**
 ```
 1-3
 ```
-→ 1〜3ページ目を削除
+→ Deletes pages 1 through 3
 
-**組み合わせ**
+**Combination**
 ```
 1,3-5,7
 ```
-→ 1、3〜5、7ページ目を削除
+→ Deletes pages 1, 3 through 5, and 7
 
-#### ステップ4: 削除の実行
-1. 「**削除を実行**」ボタンをクリック
-2. 処理が完了すると、編集済みPDFがダウンロードされます
+#### Step 4: Execute Deletion
+1. Click the **Execute Delete** button
+2. Once processing is complete, the edited PDF will be downloaded
 
-#### ステップ5: ファイルの保存
-- **Chrome/Edge/Opera**: File System Access APIにより保存先ダイアログが表示されます
-- **Firefox**: ブラウザのデフォルトダウンロードフォルダに自動保存されます
+#### Step 5: Save File
+- **Chrome/Edge/Opera**: A save location dialog will appear via File System Access API
+- **Firefox**: Automatically saved to the browser's default download folder
 
-### ページ挿入
+### Inserting Pages
 
-#### ステップ1: ファイルの選択
+#### Step 1: Select Files
 
-**挿入先PDFファイル**
-1. **挿入先PDFファイルエリア**にベースとなるPDFファイルをドラッグ&ドロップ
-2. または「ファイルを選択」ボタンから選択
+**Target PDF File**
+1. Drag and drop the base PDF file to the **Target PDF File** area
+2. Or select via the "Select File" button
 
-**挿入元PDFファイル**
-1. 「**ページ挿入**」ボタンをクリック
-2. **挿入元PDFファイルエリア**に挿入したいページを含むPDFファイルをドラッグ&ドロップ
-3. または「ファイルを選択」ボタンから選択
+**Source PDF File**
+1. Click the **Insert Pages** button
+2. Drag and drop the PDF file containing pages you want to insert to the **Source PDF File** area
+3. Or select via the "Select File" button
 
-#### ステップ2: ページ番号と挿入位置の指定
+#### Step 2: Specify Page Numbers and Insert Position
 
-**挿入元のページ番号**
+**Source Page Numbers**
 ```
 1
 ```
-→ 挿入元PDFの1ページ目のみを挿入
+→ Insert only page 1 from the source PDF
 
 ```
 1,3,5
 ```
-→ 挿入元PDFの1、3、5ページ目を挿入
+→ Insert pages 1, 3, and 5 from the source PDF
 
 ```
 1-3
 ```
-→ 挿入元PDFの1〜3ページ目を挿入
+→ Insert pages 1 through 3 from the source PDF
 
-**挿入先の位置**
+**Insert Position**
 ```
 0
 ```
-→ 挿入先PDFの最初に挿入
+→ Insert at the beginning of the target PDF
 
 ```
 1
 ```
-→ 挿入先PDFの1ページ目の後に挿入
+→ Insert after page 1 of the target PDF
 
 ```
 5
 ```
-→ 挿入先PDFの5ページ目の後に挿入
+→ Insert after page 5 of the target PDF
 
-#### ステップ3: 挿入の実行
-1. 「**挿入を実行**」ボタンをクリック
-2. 処理が完了すると、編集済みPDFがダウンロードされます
+#### Step 3: Execute Insertion
+1. Click the **Execute Insert** button
+2. Once processing is complete, the edited PDF will be downloaded
 
-#### ステップ4: ファイルの保存
-- **Chrome/Edge/Opera**: 保存先を選択できるダイアログが表示されます
-- **Firefox**: デフォルトダウンロードフォルダに自動保存されます
+#### Step 4: Save File
+- **Chrome/Edge/Opera**: A dialog to select save location will appear
+- **Firefox**: Automatically saved to the default download folder
 
-## 技術仕様
+## Technical Specifications
 
-### 使用技術
+### Technologies Used
 
-| 技術 | バージョン | 用途 |
+| Technology | Version | Purpose |
 |------|----------|------|
-| HTML5 | - | ページ構造とマークアップ |
-| CSS3 | - | スタイリング |
-| JavaScript (ES6+) | - | アプリケーションロジック |
-| Tailwind CSS | v4 | レスポンシブデザインとスタイリング |
-| pdf-lib | 最新版 | PDF操作ライブラリ |
-| File System Access API | - | ファイル保存ダイアログ（対応ブラウザのみ） |
+| HTML5 | - | Page structure and markup |
+| CSS3 | - | Styling |
+| JavaScript (ES6+) | - | Application logic |
+| Tailwind CSS | v4 | Responsive design and styling |
+| pdf-lib | Latest | PDF manipulation library |
+| File System Access API | - | File save dialog (supported browsers only) |
 
-### 処理の仕組み
+### Processing Mechanism
 
-#### ページ削除
-1. PDFファイルを読み込み、pdf-libでパース
-2. 指定されたページ番号をパース（単一、複数、範囲に対応）
-3. 削除対象外のページを新しいPDFドキュメントにコピー
-4. 新しいPDFを保存してダウンロード
+#### Page Deletion
+1. Load PDF file and parse with pdf-lib
+2. Parse specified page numbers (supports single, multiple, and ranges)
+3. Copy pages not targeted for deletion to a new PDF document
+4. Save and download the new PDF
 
-#### ページ挿入
-1. 挿入先PDFと挿入元PDFをそれぞれ読み込み
-2. 挿入元から指定されたページを取得
-3. 挿入先の指定位置にページをコピー
-4. 新しいPDFを保存してダウンロード
+#### Page Insertion
+1. Load both target PDF and source PDF
+2. Get specified pages from source
+3. Copy pages to specified position in target
+4. Save and download the new PDF
 
-### ファイルサイズ制限
+### File Size Limitations
 
-- **推奨最大サイズ**: 50MB
-- **理論上の最大サイズ**: ブラウザのメモリに依存
+- **Recommended Maximum Size**: 50MB
+- **Theoretical Maximum Size**: Depends on browser memory
 
-大きなPDFファイルや複雑な構造を持つPDFは処理に時間がかかる場合があります。
+Large PDF files or PDFs with complex structures may take longer to process.
 
-### 対応するPDFバージョン
+### Supported PDF Versions
 
-- PDF 1.3〜1.7
-- PDF 2.0（一部機能）
+- PDF 1.3 through 1.7
+- PDF 2.0 (partial functionality)
 
-### ページ数の制限
+### Page Count Limitations
 
-- **最小ページ数**: 1ページ（削除後も最低1ページは残ります）
-- **最大ページ数**: 制限なし（ただしブラウザのメモリに依存）
+- **Minimum Page Count**: 1 page (at least 1 page will remain after deletion)
+- **Maximum Page Count**: No limit (but depends on browser memory)
 
-### File System Access APIについて
+### About File System Access API
 
-本ツールでは、ファイル保存時にFile System Access APIを使用しています。
+This tool uses the File System Access API when saving files.
 
-**対応ブラウザ（Chrome、Edge、Opera）**
-- ファイル保存ダイアログが表示されます
-- 保存先を自由に選択できます
-- ファイル名も変更可能です
+**Supported Browsers (Chrome, Edge, Opera)**
+- File save dialog is displayed
+- You can freely select the save location
+- File name can be changed
 
-**非対応ブラウザ（Firefox、Safari）**
-- ブラウザのデフォルトダウンロードフォルダに自動保存されます
-- ファイル名は自動的に付与されます
-- ブラウザの設定で「ダウンロード時に保存場所を確認する」を有効にすることで、保存先を選択できます
+**Unsupported Browsers (Firefox, Safari)**
+- Automatically saved to the browser's default download folder
+- File name is automatically assigned
+- You can select save location by enabling "Always ask where to save files" in browser settings
 
 > **Note**:  
-> これはブラウザの仕様によるものであり、本ツールの制限ではありません。  
-> Firefoxは将来的にFile System Access APIをサポートする予定です。
+> This is due to browser specifications, not a limitation of this tool.  
+> Firefox plans to support File System Access API in the future.
 
-### 動作確認済み環境
+### Tested Environments
 
-- Google Chrome 120以降
-- Microsoft Edge 120以降
-- Opera 105以降
-- Firefox 120以降（ファイル保存ダイアログは非対応）
+- Google Chrome 120 and later
+- Microsoft Edge 120 and later
+- Opera 105 and later
+- Firefox 120 and later (file save dialog not supported)
 
-## セキュリティについて
+## Security
 
-### セキュリティの特徴
+### Security Features
 
-✅ **クライアントサイド処理**
-- すべてのPDF編集処理はブラウザ内で完結
-- PDFファイルがサーバーに送信されることはありません
-- インターネット接続なしでも動作可能（ローカルで完結）
+✅ **Client-Side Processing**
+- All PDF editing is completed within the browser
+- PDF files are never sent to a server
+- Works without internet connection (completely local)
 
-✅ **プライバシー保護**
-- ファイルの内容を外部に送信しません
-- ブラウザのメモリ上でのみ処理
-- ページを閉じるとすべてのデータがクリアされます
+✅ **Privacy Protection**
+- Does not send file contents externally
+- Processing only in browser memory
+- All data is cleared when the page is closed
 
-✅ **データの完全性**
-- 元のPDFファイルは変更されません
-- 編集後のPDFは新しいファイルとして保存されます
-- 元のPDF品質を保持します
+✅ **Data Integrity**
+- Original PDF files are not modified
+- Edited PDF is saved as a new file
+- Original PDF quality is maintained
 
-### セキュリティのベストプラクティス
+### Security Best Practices
 
-#### 1. バックアップの作成
-編集前に必ず元のPDFファイルのバックアップを取ってください。
+#### 1. Create Backups
+Always create a backup of the original PDF file before editing.  
 
-#### 2. 信頼できる環境での使用
-- 公共のコンピューターでの使用は避けてください
-- マルウェア対策ソフトウェアを最新の状態に保ってください
-- 信頼できるブラウザを使用してください
+#### 2. Use in Trusted Environment
+- Avoid using on public computers
+- Keep malware protection software up to date
+- Use a trusted browser
 
-#### 3. ファイルの確認
-編集後のPDFファイルを開いて、意図した通りに編集されているか確認してください。
+#### 3. Verify Files
+Open the edited PDF file to verify it has been edited as intended.  
 
-### セキュリティの制限事項
+### Security Limitations
 
-⚠️ **注意すべき点**
+⚠️ **Points to Note**
 
-1. **ブラウザのセキュリティ**
-   - ブラウザ拡張機能がデータにアクセスできる可能性があります
-   - キーロガーやマルウェアからは保護されません
+1. **Browser Security**
+   - Browser extensions may be able to access data
+   - Not protected from keyloggers or malware
 
-2. **メモリ上のデータ**
-   - 処理中はメモリ上にPDFデータが存在します
-   - ページを閉じるとクリアされます
+2. **Data in Memory**
+   - PDF data exists in memory during processing
+   - Cleared when page is closed
 
-3. **保護されたPDF**
-   - パスワード保護されたPDFは開けません
-   - 編集制限のあるPDFは正常に処理できない場合があります
+3. **Protected PDFs**
+   - Password-protected PDFs cannot be opened
+   - PDFs with editing restrictions may not process correctly
 
-4. **メタデータの保持**
-   - 一部のメタデータやフォーム情報が失われる可能性があります
-   - 重要なメタデータが含まれる場合は注意してください
+4. **Metadata Retention**
+   - Some metadata or form information may be lost
+   - Be careful if important metadata is included
 
-## トラブルシューティング
+## Troubleshooting
 
-### よくある問題と解決方法
+### Common Issues and Solutions
 
-#### ❌ 「エラーが発生しました」と表示される
+#### ❌ "An error occurred" is displayed
 
-**原因と解決方法：**
+**Causes and Solutions:**
 
-1. **PDFファイルが破損している**
-   - 別のPDFビューアで開けるか確認
-   - 可能であれば、PDFを再生成
+1. **PDF file is corrupted**
+   - Check if it can be opened in another PDF viewer
+   - If possible, regenerate the PDF
 
-2. **保護されたPDF**
-   - パスワードを解除してから再試行
-   - 編集権限があるか確認
+2. **Protected PDF**
+   - Remove password protection and try again
+   - Verify you have editing permissions
 
-3. **ファイルサイズが大きすぎる**
-   - 50MB以下のファイルを推奨
-   - 大きなファイルは分割してから処理
+3. **File size is too large**
+   - Recommended 50MB or less
+   - Split large files before processing
 
-4. **ブラウザのメモリ不足**
-   - 他のタブを閉じる
-   - ブラウザを再起動
-   - より多くのメモリを搭載したPCを使用
+4. **Browser memory shortage**
+   - Close other tabs
+   - Restart browser
+   - Use a PC with more memory
 
-#### ❌ ページ番号の指定が無効と表示される
+#### ❌ Page number specification is invalid
 
-**解決方法：**
+**Solution:**
 
-正しい形式で入力してください：
-- ✅ 正: `1,3,5` または `1-3`
-- ❌ 誤: `1, 3, 5` （スペース）
-- ❌ 誤: `1～3` （全角チルダ）
-- ❌ 誤: `a,b,c` （数字以外）
+Enter in the correct format:
+- ✅ Correct: `1,3,5` or `1-3`
+- ❌ Wrong: `1, 3, 5` (spaces)
+- ❌ Wrong: `1～3` (full-width tilde)
+- ❌ Wrong: `a,b,c` (non-numeric)
 
-#### ❌ ファイルがダウンロードされない
+#### ❌ File is not downloaded
 
-**解決方法：**
-- ブラウザのダウンロード設定を確認
-- ポップアップブロックを確認
-- ダウンロードフォルダの容量を確認
-- 別のブラウザで試す
+**Solution:**
+- Check browser download settings
+- Check popup blocker
+- Check download folder capacity
+- Try a different browser
 
-#### ❌ すべてのページを削除しようとするとエラー
+#### ❌ Error when trying to delete all pages
 
-**説明：**  
-これは意図的な動作です。PDFファイルは最低1ページ必要なため、すべてのページを削除することはできません。
+**Explanation:**  
+This is intentional behavior. PDF files require at least 1 page, so all pages cannot be deleted.
 
-**解決方法：**  
-少なくとも1ページは残してください。
+**Solution:**  
+Leave at least 1 page.
 
-#### ❌ Firefox で保存先を選択できない
+#### ❌ Cannot select save location in Firefox
 
-**説明：**  
-Firefoxは現在File System Access APIをサポートしていないため、ファイルは自動的にデフォルトダウンロードフォルダに保存されます。
+**Explanation:**  
+Firefox currently does not support File System Access API, so files are automatically saved to the default download folder.
 
-**解決方法：**
-1. Firefoxの設定で「ダウンロード時に保存場所を確認する」を有効にする
-2. または、Chrome/Edge/Operaを使用する
+**Solution:**
+1. Enable "Always ask where to save files" in Firefox settings
+2. Or use Chrome/Edge/Opera
 
-### デバッグ方法
+### Debugging Methods
 
-問題が解決しない場合、ブラウザの開発者ツールで詳細を確認：
+If the problem persists, check details in the browser's developer tools:
 
-1. **F12キー**を押して開発者ツールを開く
-2. **Console**タブを選択
-3. エラーメッセージを確認
-4. エラーメッセージをコピーして検索
+1. Press **F12** to open developer tools
+2. Select **Console** tab
+3. Check error messages
+4. Copy error message and search
 
 ## FAQ
 
-### Q1: このツールは安全ですか？
+### Q1: Is this tool safe?
 
 **A:**  
-はい、安全です。  
-すべての処理がブラウザ内で完結し、PDFファイルがインターネット上に送信されることはありません。  
-ただし、信頼できる環境（自分のPC、信頼できるブラウザ）で使用することを推奨します。
+Yes, it is safe.  
+All processing is completed within the browser, and PDF files are not sent over the internet.  
+However, it is recommended to use in a trusted environment (your own PC, trusted browser).
 
-### Q2: インターネット接続は必要ですか？
-
-**A:**  
-いいえ、必要ありません。  
-すべてのファイル（HTML、CSS、JavaScript、pdf-lib）をローカルに配置すれば、オフラインでも動作します。  
-初回読み込み時のみ、CDNからのリソース読み込みが必要な場合があります。
-
-### Q3: どのくらい大きなPDFファイルを処理できますか？
+### Q2: Is an internet connection required?
 
 **A:**  
-ブラウザのメモリに依存しますが、50MB以下を推奨します。  
-それより大きいファイルは処理に時間がかかるか、メモリ不足でエラーになる可能性があります。
+No, it is not required.  
+If all files (HTML, CSS, JavaScript, pdf-lib) are placed locally, it works offline.  
+Initial loading may require resource loading from CDN.
 
-### Q4: 元のPDFファイルは変更されますか？
-
-**A:**  
-いいえ、変更されません。  
-編集後のPDFは新しいファイルとして保存され、元のファイルはそのまま残ります。
-
-### Q5: 複数のPDFファイルを一度に編集できますか？
+### Q3: How large PDF files can be processed?
 
 **A:**  
-現在のバージョンでは1つのPDFファイルずつの処理となります。  
-複数のファイルを処理する場合は、1つずつ編集してください。
+It depends on browser memory, but 50MB or less is recommended.  
+Larger files may take longer to process or cause memory shortage errors.
 
-### Q6: モバイルデバイスでも使えますか？
-
-**A:**  
-はい、使用できます。  
-レスポンシブデザインのため、スマートフォンやタブレットでも使用できます。  
-ただし、大きなファイルの処理はPCを推奨します。
-
-### Q7: PDFの品質は劣化しますか？
+### Q4: Is the original PDF file modified?
 
 **A:**  
-基本的に劣化しません。  
-pdf-libは元のPDF品質を保持しますが、一部のメタデータやフォーム情報が失われる可能性があります。
+No, it is not modified.  
+The edited PDF is saved as a new file, and the original file remains unchanged.
 
-### Q8: パスワード保護されたPDFは編集できますか？
-
-**A:**  
-いいえ、できません。  
-パスワード保護や編集制限のあるPDFは、まず保護を解除してから編集してください。
-
-### Q9: 商用利用は可能ですか？
+### Q5: Can I edit multiple PDF files at once?
 
 **A:**  
-はい、可能です。  
-MITライセンスの下で配布されているため、商用・非商用問わず自由に使用できます。
+The current version processes one PDF file at a time.  
+To process multiple files, edit them one by one.
 
-### Q10: 他のPDF編集ツールとの互換性はありますか？
-
-**A:**  
-はい、互換性があります。  
-本ツールで編集したPDFは、Adobe Acrobat、PDF-XChange、他のPDFビューアで正常に開けます。
-
-### Q11: ページの順序を変更できますか？
+### Q6: Can I use this on mobile devices?
 
 **A:**  
-直接的な順序変更機能はありませんが、以下の方法で実現できます：
-1. 必要なページを削除
-2. 別のPDFファイルとして保存
-3. ページ挿入機能で希望の順序に再構成
+Yes, you can.  
+Due to responsive design, it can be used on smartphones and tablets.  
+However, PC is recommended for processing large files.
 
-### Q12: Firefoxで使用する際の注意点は？
+### Q7: Does PDF quality degrade?
 
 **A:**  
-Firefoxでは以下の点に注意してください：
-- File System Access API非対応のため、ファイルは自動的にデフォルトダウンロードフォルダに保存されます
-- Firefoxの設定で「ダウンロード時に保存場所を確認する」を有効にすると、保存先を選択できます
-- 基本的な機能はすべて使用可能です
+Basically, it does not degrade.  
+pdf-lib maintains original PDF quality, but some metadata or form information may be lost.
 
-## ライセンス
+### Q8: Can I edit password-protected PDFs?
+
+**A:**  
+No, you cannot.  
+For password-protected or edit-restricted PDFs, first remove the protection before editing.
+
+### Q9: Can I use this commercially?
+
+**A:**  
+Yes, you can.  
+Distributed under MIT License, it can be freely used for both commercial and non-commercial purposes.
+
+### Q10: Is there compatibility with other PDF editing tools?
+
+**A:**  
+Yes, there is compatibility.  
+PDFs edited with this tool can be opened normally in Adobe Acrobat, PDF-XChange, and other PDF viewers.
+
+### Q11: Can I change page order?
+
+**A:**  
+There is no direct page reordering function, but it can be achieved by:
+1. Delete necessary pages
+2. Save as a separate PDF file
+3. Reconstruct in desired order using page insertion function
+
+### Q12: What should I be careful about when using Firefox?
+
+**A:**  
+Please be careful of the following when using Firefox:
+- Due to File System Access API not being supported, files are automatically saved to the default download folder
+- You can select save location by enabling "Always ask where to save files" in Firefox settings
+- All basic functions are available
+
+## License
 
 ```
 MIT License
@@ -533,7 +537,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## 🔗 関連リンク
+## 🔗 Related Links
 
 - [pdf-lib Documentation](https://pdf-lib.js.org/)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
@@ -542,4 +546,4 @@ SOFTWARE.
 
 ---
 
-**最終更新**: 2025年11月  
+**Last Updated**: November 2025  
