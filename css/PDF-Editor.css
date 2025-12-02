@@ -1,0 +1,562 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.pdf-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.pdf-panel h2 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pdf-icon {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.upload-area {
+    border: 3px dashed #ddd;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 20px;
+}
+
+.upload-area:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.upload-area.drag-over {
+    border-color: #667eea;
+    background: #f0f3ff;
+    transform: scale(1.02);
+}
+
+.upload-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.upload-btn:hover {
+    transform: translateY(-2px);
+}
+
+.pages-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    min-height: 200px;
+}
+
+.page-item {
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: move;
+    transition: all 0.2s;
+}
+
+.page-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.page-item.dragging {
+    opacity: 0.5;
+}
+
+/* ドロップゾーンのスタイル - マウス位置に応じて1つだけ表示 */
+.drop-zone {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    transition: all 0.25s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.85rem;
+    overflow: hidden;
+    min-height: 200px;
+    width: 150px;
+    padding: 10px;
+    border: 2px dashed rgba(255, 255, 255, 0.6);
+    opacity: 0.8;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.drop-zone.highlight {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    opacity: 0.95;
+    transform: scale(1.05);
+    border-color: white;
+    box-shadow: 0 6px 20px rgba(86, 171, 47, 0.5);
+}
+
+.page-item.copied {
+    position: relative;
+}
+
+.page-item.copied::after {
+    content: 'コピー';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #56ab2f;
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+/* 移動されたページのマーカー */
+.page-item.moved::after {
+    content: '移動';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #3498db;
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.page-canvas {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.page-number {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 600;
+}
+
+/* 拡大表示モーダル - 閉じるボタンを常に見える位置に固定 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 3000;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    overflow: auto;
+}
+
+.modal-overlay.show {
+    display: flex;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    max-width: 90%;
+    max-height: 90%;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: auto;
+}
+
+/* 閉じるボタンを画面の右上に固定表示 */
+.modal-close {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 3001;
+}
+
+.modal-close:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+}
+
+.modal-page-info {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: #333;
+    font-weight: 600;
+}
+
+.modal-canvas-wrapper {
+    text-align: center;
+}
+
+#modalCanvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.download-area {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.download-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.download-btn:hover {
+    transform: translateY(-2px);
+}
+
+.download-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* コンテキストメニュー */
+.context-menu {
+    position: absolute;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    padding: 8px 0;
+    z-index: 2000;
+    display: none;
+}
+
+.context-menu.show {
+    display: block;
+}
+
+.context-menu-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.context-menu-item:hover {
+    background: #f0f3ff;
+}
+
+.context-menu-item.delete {
+    color: #e74c3c;
+}
+
+/* ステータスメッセージ */
+.status-message {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 30px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    z-index: 4000;
+    opacity: 0;
+    transition: opacity 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.status-message.show {
+    opacity: 1;
+}
+
+.status-message.success {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+}
+
+.status-message.error {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.status-message.info {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+}
+
+input[type="file"] {
+    display: none;
+}
+
+/* プログレスバーのスタイル */
+/* プログレスバーを表示する際の背景オーバーレイ */
+/* 画面全体を薄暗くして、ユーザーの注意をプログレスバーに集中させる */
+.progress-overlay {
+    display: none; /* 通常は非表示 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* 黒色の半透明背景 */
+    z-index: 4000; /* 他の要素よりも前面に表示 */
+    justify-content: center;
+    align-items: center;
+}
+
+/* プログレスバーが表示状態になったときの設定 */
+.progress-overlay.show {
+    display: flex; /* フレックスボックスを使って中央配置 */
+}
+
+/* プログレスバー本体のコンテナ */
+/* 白い背景の四角い枠の中にプログレスバーを配置 */
+.progress-container {
+    background: white;
+    border-radius: 12px; /* 角を丸くする */
+    padding: 30px 40px;
+    min-width: 400px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); /* 影をつけて立体感を出す */
+}
+
+/* プログレスバーのタイトル部分 */
+/* 「PDFを生成中...」などのテキストを表示 */
+.progress-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* プログレスバーとパーセンテージ表示を横並びにするラッパー */
+.progress-bar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* バーとパーセンテージの間隔 */
+    margin-bottom: 10px;
+}
+
+/* プログレスバーの外枠 */
+/* この中に実際に伸びるバーが入る */
+.progress-bar {
+    flex: 1; /* 利用可能な幅いっぱいに広がる */
+    height: 24px;
+    background: #f0f0f0; /* 薄いグレーの背景 */
+    border-radius: 12px;
+    overflow: hidden; /* 内側のバーがはみ出さないようにする */
+    position: relative;
+}
+
+/* 実際に伸びるプログレスバーの内側の部分 */
+/* 進捗に応じてwidthが0%から100%まで変化する */
+.progress-bar-fill {
+    height: 100%;
+    width: 0%; /* 初期状態は0% */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* グラデーション */
+    border-radius: 12px;
+    transition: width 0.3s ease; /* 滑らかなアニメーション効果 */
+    position: relative;
+    overflow: hidden;
+}
+
+/* プログレスバーに光沢を加えるアニメーション効果 */
+/* 処理中であることを視覚的に示す */
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 2s infinite; /* 光が流れるアニメーション */
+}
+
+/* 光が流れるアニメーションの定義 */
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* パーセンテージ表示のテキスト */
+/* プログレスバーの右側に表示される「45%」などの数字 */
+.progress-text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #667eea;
+    min-width: 50px; /* 数字が変わっても幅が変わらないようにする */
+    text-align: right;
+}
+
+/* 詳細情報の表示 */
+/* 「3 / 10 ページ」などの具体的な進捗情報 */
+.progress-details {
+    font-size: 0.9rem;
+    color: #666;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* キャンセルボタンのスタイル */
+/* プログレスバーの下部に配置されるキャンセル用のボタン */
+.progress-cancel-btn {
+    /* ボタンの基本スタイル */
+    width: 100%; /* 親要素の幅いっぱいに広がる */
+    margin-top: 20px; /* 上に余白を作って、詳細情報と適度な距離を保つ */
+    padding: 12px 24px; /* 内側の余白で、ボタンを押しやすいサイズに */
+    
+    /* 背景色とボーダー */
+    /* 赤系の色を使うことで「注意が必要な操作」であることを伝える */
+    /* ただし、濃すぎない色にすることで、威圧的にならないようにする */
+    background: #fff; /* 白い背景 */
+    border: 2px solid #e74c3c; /* 赤いボーダー */
+    color: #e74c3c; /* 赤い文字色 */
+    
+    /* 角を丸くして、モダンで柔らかい印象に */
+    border-radius: 8px;
+    
+    /* フォントのスタイル */
+    font-size: 0.95rem;
+    font-weight: 600; /* 太字にすることで、重要性を強調 */
+    
+    /* カーソルをポインターに変更することで、クリックできることを明示 */
+    cursor: pointer;
+    
+    /* トランジション効果で、ホバー時の変化を滑らかに */
+    /* 0.2秒かけて色が変わることで、ユーザーに心地よいフィードバックを与える */
+    transition: all 0.2s ease;
+}
+
+/* キャンセルボタンにマウスカーソルを乗せたとき（ホバー時）のスタイル */
+/* ユーザーが「今まさにクリックしようとしている」ことを視覚的にフィードバック */
+.progress-cancel-btn:hover {
+    /* 背景色を赤に変更 */
+    background: #e74c3c;
+    /* 文字色を白に変更（背景が赤くなったので、コントラストを保つため） */
+    color: white;
+    /* 少し上に持ち上がる効果で、ボタンが「浮いている」ような印象を与える */
+    transform: translateY(-2px);
+    /* 影を追加することで、立体感を強調 */
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+/* キャンセルボタンをクリックした瞬間（アクティブ時）のスタイル */
+/* ボタンが「押し込まれた」ような感覚を与える */
+.progress-cancel-btn:active {
+    /* 元の位置に戻す（押し込まれた感じを出す） */
+    transform: translateY(0);
+    /* 影を小さくして、平面に近づいた感じを出す */
+    box-shadow: 0 2px 6px rgba(231, 76, 60, 0.2);
+}
+
