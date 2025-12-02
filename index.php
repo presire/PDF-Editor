@@ -1,15 +1,32 @@
+<?php
+/**
+ * PDF編集ツール - ビジュアルエディタ
+ * 2つのPDFを読み込んで、ページを自由に移動・コピー・削除できるツール
+ */
+
+// 設定ファイルを読み込む
+require_once 'config.php';
+
+// セキュリティヘッダーの設定
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('X-XSS-Protection: 1; mode=block');
+?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF編集ツール - ビジュアルエディタ</title>
+    <title><?php echo htmlspecialchars(APP_TITLE); ?></title>
+    
     <!-- PDF.js -->
-    <script src="js/pdf.min.js"></script>
+    <script src="<?php echo htmlspecialchars(PDF_JS_PATH); ?>"></script>
+    
     <!-- PDF-lib -->
-    <script src="js/pdf-lib.min.js"></script>
+    <script src="<?php echo htmlspecialchars(PDF_LIB_PATH); ?>"></script>
+    
     <!-- 外部CSSファイル -->
-    <link rel="stylesheet" href="css/PDF-Editor.css">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars(CSS_PATH); ?>">
     <style>
         /* 言語切り替えトグルスイッチのスタイル */
         .language-toggle-container {
@@ -61,7 +78,7 @@
         .language-text {
             font-size: 14px;
             font-weight: 500;
-            color: #CCC;
+            color: #555;
             min-width: 30px;
             text-align: center;
         }
@@ -246,7 +263,7 @@
                 <section class="how-to-section">
                     <h3 data-i18n="securityTitle">🔒 セキュリティ</h3>
                     <ul>
-                        <li data-i18n="securityDesc1">全ての処理はブラウザ内で完結します</li>
+                        <li data-i18n="securityDesc1">全ての処理はWebブラウザ内で完結します</li>
                         <li data-i18n="securityDesc2">PDFファイルがサーバに送信されることはありません</li>
                     </ul>
                 </section>
@@ -255,6 +272,14 @@
     </div>
 
     <!-- 外部JavaScriptファイル -->
-    <script src="js/PDF-Editor.js"></script>
+    <script src="<?php echo htmlspecialchars(JS_PATH); ?>"></script>
+    
+    <?php if (ENABLE_DEBUG): ?>
+    <!-- デバッグモード -->
+    <script>
+        console.log('Debug mode enabled');
+        console.log('App version: <?php echo APP_VERSION; ?>');
+    </script>
+    <?php endif; ?>
 </body>
 </html>

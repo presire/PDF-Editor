@@ -1,0 +1,115 @@
+# PDF編集ツール - Apache設定ファイル
+
+# ============================================
+# リライト設定
+# ============================================
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # HTTPSへのリダイレクト（本番環境で有効化）
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    
+    # index.phpをデフォルトページに設定
+    DirectoryIndex index.php index.html
+</IfModule>
+
+# ============================================
+# セキュリティ設定
+# ============================================
+
+# ディレクトリリスティングを無効化
+Options -Indexes
+
+# config.phpへの直接アクセスを拒否
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# .gitファイルへのアクセスを拒否
+<FilesMatch "^\.git">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ============================================
+# セキュリティヘッダー
+# ============================================
+<IfModule mod_headers.c>
+    # XSS保護
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # コンテンツタイプスニッフィング防止
+    Header set X-Content-Type-Options "nosniff"
+    
+    # クリックジャッキング対策
+    Header set X-Frame-Options "SAMEORIGIN"
+    
+    # Referrer-Policy
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ============================================
+# MIME タイプ設定
+# ============================================
+<IfModule mod_mime.c>
+    # JavaScript
+    AddType application/javascript js
+    
+    # CSS
+    AddType text/css css
+    
+    # PDF
+    AddType application/pdf pdf
+</IfModule>
+
+# ============================================
+# キャッシュ設定
+# ============================================
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # 画像ファイル
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    
+    # CSS/JavaScript
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+    
+    # PDF
+    ExpiresByType application/pdf "access plus 1 hour"
+</IfModule>
+
+# ============================================
+# 圧縮設定
+# ============================================
+<IfModule mod_deflate.c>
+    # テキストベースのファイルを圧縮
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
+# ============================================
+# PHP設定（php.iniが編集できない場合）
+# ============================================
+<IfModule mod_php.c>
+    # メモリ制限
+    php_value memory_limit 256M
+    
+    # 最大実行時間
+    php_value max_execution_time 300
+    
+    # アップロードサイズ
+    php_value upload_max_filesize 100M
+    php_value post_max_size 100M
+    
+    # エラー表示（本番環境ではOffに）
+    php_flag display_errors Off
+</IfModule>

@@ -6,9 +6,65 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #1a0a2e;
     min-height: 100vh;
     padding: 20px;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ダークパープルグラデーション背景 */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background: linear-gradient(135deg, #1a0a2e 0%, #16213e 25%, #0f3460 50%, #16213e 75%, #1a0a2e 100%);
+    background-size: 400% 400%;
+    animation: gradientFlow 25s ease infinite;
+}
+
+@keyframes gradientFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* サイバーグリッド効果 */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-image: 
+        linear-gradient(rgba(102, 126, 234, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(102, 126, 234, 0.1) 1px, transparent 1px),
+        radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(100, 181, 246, 0.1) 0%, transparent 50%);
+    background-size: 50px 50px, 50px 50px, 100% 100%, 100% 100%, 100% 100%;
+    animation: gridPulse 8s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+    0%, 100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.7;
+    }
 }
 
 .container {
@@ -54,6 +110,63 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+/* 読み込み中アラート */
+.loading-alert {
+    display: none;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    text-align: center;
+}
+
+.loading-alert.show {
+    display: block;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading-message {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.loading-cancel-btn {
+    background: #fff;
+    color: #e74c3c;
+    border: 2px solid #e74c3c;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.loading-cancel-btn:hover {
+    background: #e74c3c;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.loading-cancel-btn:active {
+    transform: translateY(0);
 }
 
 .pdf-icon {
@@ -389,6 +502,168 @@ input[type="file"] {
     display: none;
 }
 
+/* How to use ボタンのスタイル */
+.how-to-use-btn {
+    margin-top: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.how-to-use-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+
+/* 使用方法モーダルのオーバーレイ */
+.how-to-use-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 5000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.how-to-use-overlay.show {
+    display: flex;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* 使用方法モーダル本体 */
+.how-to-use-modal {
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    position: relative;
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 閉じるボタン */
+.how-to-use-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.how-to-use-close:hover {
+    background: #c0392b;
+    transform: rotate(90deg) scale(1.1);
+}
+
+/* タイトル */
+.how-to-use-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 3px solid #667eea;
+}
+
+/* コンテンツエリア */
+.how-to-use-content {
+    color: #333;
+    line-height: 1.8;
+}
+
+/* 各セクション */
+.how-to-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+}
+
+.how-to-section:last-child {
+    margin-bottom: 0;
+}
+
+.how-to-section h3 {
+    font-size: 1.3rem;
+    color: #667eea;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.how-to-section ul {
+    margin-left: 20px;
+    padding-left: 0;
+}
+
+.how-to-section li {
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.how-to-section li strong {
+    color: #333;
+    font-weight: 600;
+}
+
+/* スクロールバーのカスタマイズ */
+.how-to-use-modal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.how-to-use-modal::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.how-to-use-modal::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 10px;
+}
+
+.how-to-use-modal::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+}
+
 /* プログレスバーのスタイル */
 /* プログレスバーを表示する際の背景オーバーレイ */
 /* 画面全体を薄暗くして、ユーザーの注意をプログレスバーに集中させる */
@@ -559,4 +834,3 @@ input[type="file"] {
     /* 影を小さくして、平面に近づいた感じを出す */
     box-shadow: 0 2px 6px rgba(231, 76, 60, 0.2);
 }
-

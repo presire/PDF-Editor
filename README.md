@@ -13,6 +13,7 @@
 - [File Structure](#file-structure)
 - [Setup](#setup)
 - [How to Use](#how-to-use)
+  - [Switching Languages](#switching-languages)
   - [Loading PDF Files](#loading-pdf-files)
   - [Moving Pages](#moving-pages)
   - [Copying Pages](#copying-pages)
@@ -40,6 +41,7 @@ This tool is a visual PDF page editing application that runs in your web browser
 - 🔍 **Page Preview**: Click any page to view it in full size
 - 📊 **Progress Tracking**: Real-time progress bar during PDF generation
 - 🚀 **Fast Processing**: Efficient PDF manipulation powered by pdf-lib and PDF.js
+- 🌐 **Multilingual Support**: Switch between Japanese and English with one click
 
 ## Key Features
 
@@ -63,6 +65,7 @@ This tool is a visual PDF page editing application that runs in your web browser
 - ✅ Progress bar with cancellation support
 - ✅ Real-time status messages
 - ✅ Keyboard shortcuts (ESC to cancel operations)
+- ✅ **Language Toggle**: Switch between Japanese and English instantly
 
 ### File Management
 - ✅ Download edited PDFs independently
@@ -70,19 +73,29 @@ This tool is a visual PDF page editing application that runs in your web browser
 - ✅ Automatic filename generation
 - ✅ Support for large PDFs with progress tracking
 
+### Language Support
+- ✅ **Japanese/English Toggle**: Switch languages with a single click
+- ✅ **Persistent Settings**: Language preference saved in browser
+- ✅ **Complete Translation**: All UI elements, messages, and labels are translated
+- ✅ **Real-time Updates**: Existing pages update immediately when language changes
+
 ## File Structure
 
 ```
 📁 Project Root
-├── 📄 PDF-Editor.html           # Main HTML file
+├── 📄 PDF-Editor.html           # Main HTML file (standalone version)
+├── 📄 index.php                 # PHP version with configuration support
+├── 📄 config.php                # Configuration file (PHP version only)
+├── 📄 .htaccess                 # Apache configuration (PHP version only)
 ├── 📄 README.md                 # This file
+├── 📄 README_JP.md              # Japanese README
 ├── 📁 css/
 │   ├── 📄 PDF-Editor.css        # Custom styles
 │   └── 📄 tailwind.css          # Custom styles
 ├── 📁 js/
 │   ├── 📄 pdf.min.js            # PDF.js library for rendering
 │   ├── 📄 pdf-lib.min.js        # pdf-lib library for manipulation
-│   └── 📄 PDF-Editor.js         # Main application logic
+│   └── 📄 PDF-Editor.js         # Main application logic with i18n
 └── 📁 img/
     └── 📄 (screenshots)         # Usage screenshots
 ```
@@ -90,10 +103,42 @@ This tool is a visual PDF page editing application that runs in your web browser
 ### File Descriptions
 
 #### `PDF-Editor.html`
-Main HTML file containing the application structure, dual-panel layout, modal window, and progress overlay.
+Standalone HTML file containing the application structure, dual-panel layout, modal window, progress overlay, and language toggle switch. This version works without a web server.
+
+#### `index.php`
+PHP version of the main file with additional configuration support. Provides enhanced security features and server-side configuration management. **Requires PHP 7.0 or higher and Apache web server.**
+
+#### `config.php`
+Configuration file for PHP version. Contains:
+- Application settings (name, version)
+- Path configurations
+- Security settings (file size limits, allowed file types)
+- Debug mode settings
+- Timezone configuration
+- Utility functions for validation
+
+**Security Note**: Direct access to this file is blocked by .htaccess
+
+#### `.htaccess`
+Apache configuration file for PHP version. Provides:
+- URL rewriting rules
+- Security headers (XSS protection, clickjacking prevention)
+- Access control (blocks direct access to config.php)
+- MIME type configuration
+- Cache control settings
+- Compression settings
+- PHP configuration overrides
 
 #### `css/PDF-Editor.css`
-Custom stylesheet providing visual design for the dual-panel interface, page thumbnails, drag-and-drop feedback, modal window, and progress bar.
+Custom stylesheet providing visual design for the dual-panel interface, page thumbnails, drag-and-drop feedback, modal window, progress bar, and language toggle.
+
+#### `css/tailwind.css`
+Tailwind CSS framework file for utility-first styling. Provides responsive design utilities, spacing, colors, and layout classes used throughout the application. This can be either:
+- A custom Tailwind build with only the utilities used in the project
+- The full Tailwind CSS library
+- A CDN-linked version (if using remote loading)
+
+**Note**: If you're using a CDN version of Tailwind CSS, this file may be optional. Check the HTML file's `<link>` tags to see if Tailwind is loaded via CDN.
 
 #### `js/PDF-Editor.js`
 Main application logic including:
@@ -102,6 +147,8 @@ Main application logic including:
 - Page manipulation (move, copy, delete)
 - PDF generation with progress tracking
 - Event handling and user interactions
+- **Internationalization (i18n) system**
+- **Language switching functionality**
 
 #### `js/pdf.min.js`
 PDF.js library for rendering PDF pages as canvas elements for thumbnail display.
@@ -118,11 +165,18 @@ pdf-lib library for PDF manipulation - loading, modifying, and saving PDF docume
   - **Supported**: Firefox 88+
   - **Limited Support**: Safari (may have compatibility issues)
 
+**For PHP Version (index.php):**
+- PHP 7.0 or higher
+- Apache web server with mod_rewrite enabled
+- Basic file permissions (read/write for application files)
+
 ### Installation Steps
+
+#### Option 1: Standalone HTML Version (Recommended for Local Use)
 
 1. **Download Files**
    
-   Download all files and maintain the following folder structure.
+   Download all files and maintain the folder structure.
 
 2. **File Placement**
    
@@ -130,7 +184,8 @@ pdf-lib library for PDF manipulation - loading, modifying, and saving PDF docume
    your-folder/
    ├── PDF-Editor.html
    ├── css/
-   │   └── PDF-Editor.css
+   │   ├── PDF-Editor.css
+   │   └── tailwind.css
    ├── js/
    │   ├── pdf.min.js
    │   ├── pdf-lib.min.js
@@ -153,6 +208,79 @@ python -m http.server 8000
 # Access http://localhost:8000/PDF-Editor.html in your browser
 ```
 
+#### Option 2: PHP Version (Recommended for Web Server Deployment)
+
+1. **Download All Files**
+   
+   Download all files including `index.php`, `config.php`, and `.htaccess`.
+
+2. **File Placement**
+   
+   ```
+   your-web-directory/
+   ├── index.php
+   ├── config.php
+   ├── .htaccess
+   ├── css/
+   │   ├── PDF-Editor.css
+   │   └── tailwind.css
+   ├── js/
+   │   ├── pdf.min.js
+   │   ├── pdf-lib.min.js
+   │   └── PDF-Editor.js
+   └── img/
+       └── (screenshots)
+   ```
+
+3. **Configure Apache**
+   
+   Ensure Apache has `mod_rewrite` and `mod_headers` enabled:
+   
+   ```bash
+   # On Ubuntu/Debian
+   sudo a2enmod rewrite
+   sudo a2enmod headers
+   sudo systemctl restart apache2
+   ```
+
+4. **Set File Permissions**
+   
+   ```bash
+   # Make config.php readable by web server
+   chmod 644 config.php
+   
+   # Make .htaccess readable
+   chmod 644 .htaccess
+   
+   # Ensure proper ownership (adjust www-data to your web server user)
+   chown -R www-data:www-data /path/to/your-web-directory
+   ```
+
+5. **Configure Settings (Optional)**
+   
+   Edit `config.php` to customize:
+   - Application name and version
+   - Maximum file size limit
+   - Debug mode (set to `false` for production)
+   - File paths if different from defaults
+
+6. **Access the Application**
+   
+   Navigate to your web server URL (e.g., `http://localhost/` or `https://yourdomain.com/`)
+
+7. **Security Check**
+   
+   - Verify that `config.php` cannot be accessed directly (should return 403 Forbidden)
+   - Test URL: `http://your-domain/config.php`
+   - Expected result: Access denied
+
+> **Production Environment Checklist**:
+> - [ ] Set `ENABLE_DEBUG` to `false` in config.php
+> - [ ] Enable HTTPS redirect in .htaccess (uncomment lines 10-11)
+> - [ ] Verify security headers are working
+> - [ ] Test that config.php is not directly accessible
+> - [ ] Check file upload limits match your requirements
+
 ### Loading External Libraries
 
 The application automatically loads the following libraries from CDN:
@@ -162,15 +290,39 @@ For offline use, download these libraries and update the URLs in the JavaScript 
 
 ## How to Use
 
+### Switching Languages
+
+**Location**: Top-right corner of the application
+
+**How to Switch**:
+1. Look for the language toggle switch in the top-right corner
+2. The current language is displayed (e.g., "日本語" or "English")
+3. Click the toggle switch to change languages
+4. The entire interface updates immediately:
+   - All buttons and labels
+   - Status messages
+   - Page thumbnails
+   - Modal windows
+   - Progress indicators
+
+**Language Persistence**:
+- Your language preference is automatically saved in browser storage
+- The selected language is remembered on your next visit
+- No account or login required
+
+**Supported Languages**:
+- 🇯🇵 Japanese (日本語)
+- 🇺🇸 English
+
 ### Loading PDF Files
 
 #### Left Panel (Panel L)
-1. Click the **"Choose File"** button in the left panel or drag and drop a PDF file onto the upload area
+1. Click the **"Select File"** button in the left panel or drag and drop a PDF file onto the upload area
 2. The PDF will load and display page thumbnails
 3. File information is shown at the top of the panel
 
 #### Right Panel (Panel R)
-1. Click the **"Choose File"** button in the right panel or drag and drop a PDF file onto the upload area
+1. Click the **"Select File"** button in the right panel or drag and drop a PDF file onto the upload area
 2. The PDF will load and display page thumbnails
 3. Both PDFs can now be edited independently
 
@@ -242,72 +394,95 @@ For offline use, download these libraries and update the URLs in the JavaScript 
 |------|----------|------|
 | HTML5 | - | Page structure and markup |
 | CSS3 | - | Styling and animations |
+| Tailwind CSS | - | Utility-first CSS framework for responsive design |
 | JavaScript (ES6+) | - | Application logic |
 | PDF.js | v3.11 | PDF rendering and preview |
 | pdf-lib | Latest | PDF manipulation and generation |
-| Canvas API | - | Page thumbnail rendering |
+| Canvas API | - | Rendering page thumbnails |
+| LocalStorage API | - | Storing language preferences |
 
-### Processing Mechanism
+### Internationalization (i18n) Implementation
+
+#### Language System
+- **Built-in Translation Dictionary**: Complete translations for Japanese and English
+- **Dynamic Updates**: All UI elements update in real-time when language changes
+- **Scope**: Covers all buttons, labels, messages, page indicators, and modal content
+- **Storage**: Language preference saved in browser's localStorage
+
+#### Translation Coverage
+- Application title and subtitle
+- File upload buttons and instructions
+- PDF panel labels (Left/Right)
+- Page thumbnails (L/R indicators)
+- Status messages (success, error, info)
+- Progress bar text and indicators
+- Modal window content
+- Context menu items
+- Help/usage instructions
+- All error and confirmation messages
+
+### Processing Flow
 
 #### PDF Loading
-1. User selects a PDF file via file input or drag-and-drop
-2. File is loaded into memory using FileReader API
-3. PDF.js parses and renders each page as a canvas element
+1. User selects a PDF file via file input or drag & drop
+2. FileReader API loads the file into memory
+3. PDF.js parses each page and renders them as canvas elements
 4. Thumbnails are generated and displayed in the panel
-5. pdf-lib loads the PDF for manipulation operations
+5. pdf-lib loads the PDF for manipulation
+6. Status messages appear in the selected language
 
-#### Page Moving (Same PDF)
+#### Page Moving (Within Same PDF)
 1. User drags a page thumbnail to a new position
 2. JavaScript tracks the drag operation and target position
-3. On drop, the page order array is updated
-4. UI is refreshed to reflect the new order
-5. No PDF regeneration until download
+3. Page order array is updated on drop
+4. UI updates to reflect new order
+5. PDF is not regenerated until download
 
 #### Page Copying (Between PDFs)
 1. User drags a page from one panel to another
 2. Source page data is retrieved from pdf-lib document
-3. Page is copied to the destination PDF's page array
-4. Destination panel UI is updated with the new page
+3. Page is copied to destination PDF's page array
+4. Destination panel UI is updated with new page
 5. Source PDF remains unchanged
 
 #### Page Deletion
 1. User right-clicks a page and selects delete
 2. Page is removed from the page array
 3. Validation ensures at least 1 page remains
-4. UI is updated immediately
-5. No PDF regeneration until download
+4. UI updates immediately
+5. PDF is not regenerated until download
 
 #### PDF Generation
-1. User clicks the download button
-2. Progress bar appears with page count information
+1. User clicks download button
+2. Progress bar appears with page count information (in selected language)
 3. New PDF document is created using pdf-lib
 4. Pages are copied one by one with progress updates
-5. Each page copy updates the progress bar
+5. Progress bar updates for each page copied
 6. Completed PDF is converted to Blob
-7. Blob is downloaded using browser download API
-8. Progress bar disappears upon completion
+7. Blob is downloaded using browser's download API
+8. Progress bar disappears on completion
 
-### File Size Limitations
+### File Size Limits
 
-- **Recommended Maximum Size**: 50MB per PDF
-- **Theoretical Maximum Size**: Depends on browser memory
+- **Recommended Maximum**: 50MB per PDF
+- **Theoretical Maximum**: Depends on browser memory
 - **Note**: Large PDFs may take longer to load and process
 
 ### Supported PDF Versions
 
-- PDF 1.3 through 1.7
-- PDF 2.0 (partial functionality)
+- PDF 1.3 to 1.7
+- PDF 2.0 (partial support)
 
-### Page Count Limitations
+### Page Count Limits
 
 - **Minimum Pages**: 1 page (at least 1 page must remain after deletion)
-- **Maximum Pages**: No limit (depends on browser memory)
+- **Maximum Pages**: No limit (but depends on browser memory)
 
 ### Performance Considerations
 
 - **Thumbnail Generation**: May take time for PDFs with many pages
 - **Drag Operations**: Optimized for smooth performance
-- **PDF Generation**: Progress bar allows monitoring and cancellation
+- **PDF Generation**: Monitored with progress bar, cancellable
 - **Memory Usage**: Increases with PDF size and page count
 
 ## Browser Compatibility
@@ -316,22 +491,22 @@ For offline use, download these libraries and update the URLs in the JavaScript 
 
 ✅ **Google Chrome 90+**
 - All features fully supported
-- Optimal performance
+- Best performance
 - Hardware acceleration for canvas rendering
 
 ✅ **Microsoft Edge 90+**
 - All features fully supported
-- Chromium-based, similar performance to Chrome
+- Chromium-based, same performance as Chrome
 
 ✅ **Opera 76+**
 - All features fully supported
-- Based on Chromium engine
+- Chromium engine based
 
 ### Partially Supported Browsers
 
 ⚠️ **Firefox 88+**
 - All core features supported
-- Slightly different drag-and-drop behavior
+- Drag & drop behavior may differ slightly
 - May require CORS configuration for local testing
 
 ⚠️ **Safari**
@@ -369,6 +544,11 @@ For offline use, download these libraries and update the URLs in the JavaScript 
 - All processing is done locally
 - No third-party services involved
 - No tracking or analytics
+
+✅ **Local Storage Only**
+- Only language preference is stored locally
+- No sensitive data is saved
+- Clear storage anytime via browser settings
 
 ### Security Best Practices
 
@@ -466,6 +646,14 @@ Leave at least 1 page in the PDF.
 - Ensure a PDF file has been loaded
 - Check if the PDF loaded successfully (thumbnails should be visible)
 
+#### ❌ Language not switching
+
+**Solution:**
+- Refresh the page
+- Check if JavaScript is enabled
+- Clear browser cache and try again
+- Check browser console for errors (F12)
+
 ### Debugging Methods
 
 If problems persist, check details in the browser's developer tools:
@@ -542,6 +730,89 @@ PDF generation can take time, especially for large files. The progress bar shows
 **A:**  
 The operation will be interrupted, and no file will be downloaded. The original PDFs remain unchanged. You can safely reload the page and try again.
 
+### Q14: How do I switch languages?
+
+**A:**  
+Click the language toggle switch in the top-right corner of the application. The interface immediately switches between Japanese and English. Your preference is saved automatically.
+
+### Q15: What gets translated when I switch languages?
+
+**A:**  
+Everything! All buttons, labels, status messages, page indicators, modal content, progress bar text, error messages, and help text are translated. Even the page thumbnails update to show "L/R" in English or "左/右" in Japanese.
+
+### Q16: Will my language preference be remembered?
+
+**A:**  
+Yes, your language selection is saved in your browser's local storage. When you return to the application, it will automatically use your preferred language.
+
+### Q17: Can I add more languages?
+
+**A:**  
+The current version supports Japanese and English. To add more languages, you would need to modify the translation dictionary in the JavaScript file. The system is designed to be extensible for additional languages.
+
+### Q18: Should I use the HTML version or PHP version?
+
+**A:**  
+- **Use HTML version (PDF-Editor.html)** if:
+  - You want to use it locally on your computer
+  - You don't have access to a web server
+  - You need a simple, standalone tool
+  - You're testing or developing
+
+- **Use PHP version (index.php)** if:
+  - You're deploying on a web server
+  - You need centralized configuration management
+  - You want enhanced security features (access control, security headers)
+  - You need to customize file size limits or other settings
+  - You're using this in a production environment
+
+Both versions have identical PDF editing functionality - the PHP version just adds configuration and security features.
+
+### Q19: What is config.php and do I need it?
+
+**A:**  
+`config.php` is the configuration file for the PHP version. It contains application settings like file size limits, allowed file types, and security configurations. You only need it if you're using `index.php`. If you're using the standalone HTML version (`PDF-Editor.html`), you don't need config.php.
+
+### Q20: Why can't I access config.php directly?
+
+**A:**  
+This is intentional and a security feature. The `.htaccess` file blocks direct access to `config.php` to prevent unauthorized users from viewing your configuration settings. This is a best practice for web applications. The file is only accessible by the PHP application itself.
+
+### Q21: How do I change the maximum file size limit in PHP version?
+
+**A:**  
+Edit `config.php` and change the `MAX_FILE_SIZE` constant:
+
+```php
+// Default: 50MB
+define('MAX_FILE_SIZE', 50 * 1024 * 1024);
+
+// To change to 100MB:
+define('MAX_FILE_SIZE', 100 * 1024 * 1024);
+```
+
+You may also need to adjust PHP and Apache settings in `.htaccess` or `php.ini` if the new limit exceeds server defaults.
+
+### Q22: Do I need to install Tailwind CSS separately?
+
+**A:**  
+No installation is required if:
+- The `css/tailwind.css` file is included in your download
+- OR if the HTML file loads Tailwind via CDN (check for `<link>` tags pointing to a CDN)
+
+If you want to customize Tailwind or build a smaller custom version:
+1. Visit [Tailwind CSS documentation](https://tailwindcss.com/docs/installation)
+2. Follow the installation guide for your preferred method
+3. Build a custom version containing only the utilities you need
+4. Replace the existing `tailwind.css` file with your custom build
+
+For most users, the included Tailwind CSS file is sufficient and requires no additional setup.
+
+### Q23: Can I use the application without Tailwind CSS?
+
+**A:**  
+While Tailwind CSS provides utility classes for responsive design and layout, the core PDF editing functionality does not strictly depend on it. However, removing Tailwind CSS will affect the visual appearance and responsive behavior of the interface. If you remove it, you may need to add custom CSS to maintain proper styling.
+
 ## License
 
 ```
@@ -572,11 +843,12 @@ SOFTWARE.
 
 - [PDF.js Documentation](https://mozilla.github.io/pdf.js/)
 - [pdf-lib Documentation](https://pdf-lib.js.org/)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 - [MDN Web Docs - Drag and Drop API](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API)
 - [MDN Web Docs - Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
-- [MDN Web Docs - PDF](https://developer.mozilla.org/en-US/docs/Glossary/PDF)
+- [MDN Web Docs - LocalStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
 
 ---
 
 **Last Updated**: December 2025  
-**Version**: 2.0 (Visual Editor)  
+**Version**: 2.1 (Visual Editor with i18n Support)  

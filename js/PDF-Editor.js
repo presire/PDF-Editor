@@ -15,6 +15,9 @@ let activeDropZones = []; // アクティブなドロップゾーンを追跡
 // まるで信号機のように、「進め（false）」か「止まれ（true）」かを示す役割を持ちます
 let pdfGenerationCancelled = false;
 
+// PDF読み込みのキャンセルフラグ（左右のPDF用）
+let pdfLoadingCancelled = [false, false];
+
 // ステータスメッセージを表示
 function showStatus(message, type = 'info', duration = 3000) {
     const statusDiv = document.getElementById('statusMessage');
@@ -25,6 +28,30 @@ function showStatus(message, type = 'info', duration = 3000) {
         setTimeout(() => {
             statusDiv.classList.remove('show');
         }, duration);
+    }
+}
+
+// PDFラベルを更新する関数
+// pdfNumber: 1または2（左側または右側）
+// fileName: 表示するファイル名
+function updatePdfLabel(pdfNumber, fileName) {
+    const label = document.getElementById(`pdfLabel${pdfNumber}`);
+    if (label) {
+        const icon = label.querySelector('.pdf-icon');
+        const iconText = icon ? icon.textContent : (pdfNumber === 1 ? 'L' : 'R');
+        
+        // ファイル名が長い場合は省略表示
+        const maxLength = 30;
+        let displayName = fileName;
+        if (fileName.length > maxLength) {
+            displayName = fileName.substring(0, maxLength - 3) + '...';
+        }
+        
+        // ラベルのHTMLを更新（アイコンとファイル名）
+        label.innerHTML = `
+            <div class="pdf-icon">${iconText}</div>
+            ${displayName}
+        `;
     }
 }
 
@@ -48,7 +75,7 @@ function showProgress(title, total) {
     titleElement.textContent = title; // タイトルを設定
     barFill.style.width = '0%'; // バーの幅を0%に初期化
     text.textContent = '0%'; // パーセンテージ表示を0%に初期化
-    details.textContent = `0 / ${total} ページ`; // 「0 / 10 ページ」のような形式で表示
+    details.innerHTML = `0 / ${total} <span data-i18n="pages">${getTranslation('pages')}</span>`; // 「0 / 10 ページ」のような形式で表示
     
     // オーバーレイを表示（画面全体を薄暗くして、プログレスバーを前面に出す）
     overlay.classList.add('show');
@@ -81,7 +108,7 @@ function updateProgress(current, total) {
     // プログレスバーの各要素を更新
     barFill.style.width = `${percentage}%`; // バーの幅を更新（例：30%）
     text.textContent = `${percentage}%`; // パーセンテージ表示を更新
-    details.textContent = `${current} / ${total} ページ`; // 「3 / 10 ページ」のように更新
+    details.innerHTML = `${current} / ${total} <span data-i18n="pages">${getTranslation('pages')}</span>`; // 「3 / 10 ページ」のように更新
 }
 
 // プログレスバーを非表示にする関数
@@ -102,7 +129,7 @@ function hideProgress() {
     const titleElement = document.getElementById('progressTitle');
     
     cancelBtn.disabled = false; // ボタンを有効化
-    cancelBtn.textContent = '✕ キャンセル (ESC)'; // テキストを元に戻す
+    cancelBtn.textContent = getTranslation('cancelProgress'); // テキストを元に戻す
     cancelBtn.style.opacity = '1'; // 透明度を元に戻す
     titleElement.style.color = ''; // タイトルの色をリセット
     
@@ -123,13 +150,13 @@ function cancelProgress() {
     
     // プログレスバーのタイトルを変更して、キャンセル中であることを視覚的に示す
     const titleElement = document.getElementById('progressTitle');
-    titleElement.textContent = 'キャンセル中...';
+    titleElement.textContent = getTranslation('cancelling');
     titleElement.style.color = '#e74c3c'; // タイトルの色を赤に変更
     
     // キャンセルボタンを無効化して、二重にキャンセルされることを防ぐ
     const cancelBtn = document.getElementById('progressCancelBtn');
     cancelBtn.disabled = true; // ボタンを無効化
-    cancelBtn.textContent = 'キャンセル中...'; // ボタンのテキストを変更
+    cancelBtn.textContent = getTranslation('cancelling'); // ボタンのテキストを変更
     cancelBtn.style.opacity = '0.6'; // ボタンを半透明にして、無効化されていることを示す
 }
 
@@ -157,6 +184,7 @@ for (let i = 1; i <= 2; i++) {
     const uploadArea = document.getElementById(`uploadArea${i}`);
     const pagesContainer = document.getElementById(`pagesContainer${i}`);
     const downloadBtn = document.getElementById(`downloadBtn${i}`);
+    const loadingCancelBtn = document.getElementById(`loadingCancelBtn${i}`);
 
     // ファイル選択
     fileInput.addEventListener('change', (e) => {
@@ -185,6 +213,11 @@ for (let i = 1; i <= 2; i++) {
         }
     });
     
+    // 読み込みキャンセルボタンのイベントリスナー
+    loadingCancelBtn.addEventListener('click', () => {
+        pdfLoadingCancelled[i - 1] = true;
+    });
+    
     // ページコンテナにドラッグイベントを追加
     pagesContainer.addEventListener('dragover', handleDragOver);
     pagesContainer.addEventListener('drop', handleDrop);
@@ -192,11 +225,18 @@ for (let i = 1; i <= 2; i++) {
 
 // PDFを読み込む
 async function loadPDF(file, pdfNumber) {
+    const loadingAlert = document.getElementById(`loadingAlert${pdfNumber}`);
+    const loadingMessage = loadingAlert.querySelector('.loading-message');
+    
     try {
-        const sideLabel = pdfNumber === 1 ? '左側' : '右側';
+        const sideLabel = pdfNumber === 1 ? getTranslation('left') : getTranslation('right');
         
-        // 読み込み開始メッセージを表示（duration: 0 で自動的に消えないようにする）
-        showStatus(`PDFを読み込み中... (${sideLabel})`, 'info', 0);
+        // キャンセルフラグをリセット
+        pdfLoadingCancelled[pdfNumber - 1] = false;
+        
+        // 読み込み中アラートを表示
+        loadingAlert.classList.add('show');
+        loadingMessage.textContent = getTranslation('loading');
         
         const arrayBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -213,22 +253,45 @@ async function loadPDF(file, pdfNumber) {
         
         // ページを1つずつ読み込みながら、進捗を表示
         for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+            // キャンセルチェック
+            if (pdfLoadingCancelled[pdfNumber - 1]) {
+                loadingAlert.classList.remove('show');
+                showStatus(currentLanguage === 'ja' ? `PDFの読み込みをキャンセルしました (${sideLabel})` : `PDF loading cancelled (${sideLabel})`, 'info', 3000);
+                // コンテナをクリア
+                container.innerHTML = '';
+                pdfDocuments[pdfNumber - 1] = null;
+                return;
+            }
+            
             const page = await pdf.getPage(pageNum);
             const pageItem = await createPageItem(pdf, pdfNumber, pageNum, page);
             container.appendChild(pageItem);
             
-            // 進捗状況を更新（現在のページ数 / 全体のページ数）
-            showStatus(`PDFを読み込み中... (${sideLabel}) ${pageNum} / ${pdf.numPages} ページ`, 'info', 0);
+            // 進捗状況を更新
+            loadingMessage.textContent = `${getTranslation('loading')} ${pageNum} / ${pdf.numPages} ${getTranslation('pages')}`;
         }
+        
+        // 読み込み中アラートを非表示
+        loadingAlert.classList.remove('show');
         
         // ダウンロードボタンを有効化
         document.getElementById(`downloadBtn${pdfNumber}`).disabled = false;
         
+        // PDFラベルをファイル名に更新
+        updatePdfLabel(pdfNumber, file.name);
+        
         // 完了メッセージを表示（3秒後に自動的に消える）
-        showStatus(`PDFを読み込みました (${pdf.numPages}ページ)`, 'success', 3000);
+        showStatus(currentLanguage === 'ja' ? `PDFを読み込みました (${pdf.numPages}ページ) - ${sideLabel}` : `PDF loaded (${pdf.numPages} pages) - ${sideLabel}`, 'success', 3000);
     } catch (error) {
-        showStatus('PDFの読み込みに失敗しました', 'error');
-        console.error(error);
+        // 読み込み中アラートを非表示
+        loadingAlert.classList.remove('show');
+        
+        // キャンセルによるエラーでない場合のみエラーメッセージを表示
+        if (!pdfLoadingCancelled[pdfNumber - 1]) {
+            const sideLabel = pdfNumber === 1 ? getTranslation('left') : getTranslation('right');
+            showStatus(currentLanguage === 'ja' ? `PDFの読み込みに失敗しました (${sideLabel})` : `Failed to load PDF (${sideLabel})`, 'error', 3000);
+            console.error(error);
+        }
     }
 }
 
@@ -258,8 +321,11 @@ async function createPageItem(pdf, pdfNumber, pageNum, page) {
     
     const pageNumberDiv = document.createElement('div');
     pageNumberDiv.className = 'page-number';
-    const sideLabel = pdfNumber === 1 ? '左' : '右';
-    pageNumberDiv.textContent = `${sideLabel}側 - P.${pageNum}`;
+    const sideLabel = pdfNumber === 1 ? (currentLanguage === 'ja' ? '左' : 'L') : (currentLanguage === 'ja' ? '右' : 'R');
+    const sideText = currentLanguage === 'ja' ? '側' : '';
+    pageNumberDiv.textContent = `${sideLabel}${sideText} - P.${pageNum}`;
+    pageNumberDiv.dataset.pdfNumber = pdfNumber; // PDF番号を保存（言語切り替え用）
+    pageNumberDiv.dataset.pageNum = pageNum; // ページ番号を保存（言語切り替え用）
     
     pageItem.appendChild(canvasWrapper);
     pageItem.appendChild(pageNumberDiv);
@@ -288,8 +354,8 @@ async function showPageModal(pdfNumber, pageNum, page) {
     const modalCanvas = document.getElementById('modalCanvas');
     
     // ページ情報を表示
-    const sideLabel = pdfNumber === 1 ? '左側のPDF' : '右側のPDF';
-    modalInfo.textContent = `${sideLabel} - ページ ${pageNum}`;
+    const sideLabel = pdfNumber === 1 ? (currentLanguage === 'ja' ? '左側のPDF' : 'Left PDF') : (currentLanguage === 'ja' ? '右側のPDF' : 'Right PDF');
+    modalInfo.textContent = `${sideLabel} - ${getTranslation('page')} ${pageNum}`;
     
     // 高解像度でレンダリング（スケール2倍）
     const viewport = page.getViewport({ scale: 2 });
@@ -594,7 +660,7 @@ async function handleDrop(e) {
         // targetIndexはdraggedElementを除外した配列でのインデックス
         // draggedOriginalIndexは全要素を含む配列でのインデックス
         if (targetIndex === draggedOriginalIndex) {
-            showStatus('元の位置に戻しました（変更なし）', 'info', 1500);
+            showStatus(currentLanguage === 'ja' ? '元の位置に戻しました（変更なし）' : 'Returned to original position (no change)', 'info', 1500);
             return;
         }
         
@@ -625,13 +691,13 @@ async function handleDrop(e) {
         // 移動後、元の位置に戻ったページから移動マークを削除
         checkAndUpdateMovedMarkers(targetContainer);
         
-        showStatus('ページを移動しました', 'success', 2000);
+        showStatus(getTranslation('pageMoved'), 'success', 2000);
     } else {
         // 別のコンテナへのコピー
         
         // ★★★ コピー済みページの元のPDFへの戻し防止（念のための二重チェック） ★★★
         if (draggedElement.classList.contains('copied') && targetPdfNum === originalPdfNum) {
-            showStatus('コピーされたページを元のPDFに戻すことはできません', 'error', 3000);
+            showStatus(currentLanguage === 'ja' ? 'コピーされたページを元のPDFに戻すことはできません' : 'Cannot return copied page to original PDF', 'error', 3000);
             return;
         }
         
@@ -657,7 +723,7 @@ async function handleDrop(e) {
                 targetContainer.insertBefore(newPageItem, pageItems[targetIndex]);
             }
             
-            showStatus('ページをコピーしました（元のページは残っています）', 'success', 2000);
+            showStatus(getTranslation('pageCopied'), 'success', 2000);
         }
     }
 }
@@ -731,9 +797,9 @@ document.getElementById('deleteMenuItem').addEventListener('click', () => {
         
         if (pageCount > 1) {
             contextMenuTarget.remove();
-            showStatus('ページを削除しました', 'success', 2000);
+            showStatus(getTranslation('pageDeleted'), 'success', 2000);
         } else {
-            showStatus('最後のページは削除できません', 'error', 2000);
+            showStatus(getTranslation('cannotDeleteLastPage'), 'error', 2000);
         }
         
         contextMenuTarget = null;
@@ -754,11 +820,11 @@ document.getElementById('downloadBtn2').addEventListener('click', async () => {
 // 指定したPDFをダウンロードする関数
 async function downloadPDF(pdfNumber) {
     try {
-        const sideLabel = pdfNumber === 1 ? '左側' : '右側';
+        const sideLabel = pdfNumber === 1 ? getTranslation('left') : getTranslation('right');
         
         // PDFがアップロードされているか確認
         if (!pdfDocuments[pdfNumber - 1]) {
-            showStatus(`${sideLabel}のPDFがアップロードされていません。まずPDFをアップロードしてください。`, 'error', 5000);
+            showStatus(`${sideLabel}${getTranslation('pdfNotUploaded')}`, 'error', 5000);
             return;
         }
         
@@ -768,12 +834,12 @@ async function downloadPDF(pdfNumber) {
         
         // ページが存在するか確認
         if (pages.length === 0) {
-            showStatus(`${sideLabel}のPDFにページがありません`, 'error');
+            showStatus(`${sideLabel}${getTranslation('noPages')}`, 'error');
             return;
         }
         
         // プログレスバーを表示（処理開始を視覚的に示す）
-        showProgress(`${sideLabel}のPDFを生成中...`, pages.length);
+        showProgress(`${sideLabel}${getTranslation('generating')}`, pages.length);
         
         // 新しいPDFドキュメントを作成
         const newPdfDoc = await PDFLib.PDFDocument.create();
@@ -797,7 +863,7 @@ async function downloadPDF(pdfNumber) {
                 hideProgress();
                 
                 // キャンセルされたことをユーザーに通知
-                showStatus(`${sideLabel}のPDF生成をキャンセルしました`, 'info', 3000);
+                showStatus(`${sideLabel}${getTranslation('cancelled')}`, 'info', 3000);
                 
                 // 関数を終了（ダウンロードは実行されません）
                 return;
@@ -842,16 +908,294 @@ async function downloadPDF(pdfNumber) {
         hideProgress();
         
         // 成功メッセージを表示
-        showStatus(`${sideLabel}のPDFをダウンロードしました`, 'success');
+        showStatus(`${sideLabel}${getTranslation('downloaded')}`, 'success');
     } catch (error) {
-        const sideLabel = pdfNumber === 1 ? '左側' : '右側';
+        const sideLabel = pdfNumber === 1 ? getTranslation('left') : getTranslation('right');
         
         // エラーが発生した場合もプログレスバーを非表示にする
         hideProgress();
         
         // エラーの詳細をユーザーに表示
         const errorMessage = error.message || error.toString();
-        showStatus(`${sideLabel}のPDFの生成に失敗しました: ${errorMessage}`, 'error', 8000);
+        showStatus(`${sideLabel}${getTranslation('generationFailed')}${errorMessage}`, 'error', 8000);
         console.error('PDF生成エラーの詳細:', error);
     }
+}
+
+// 使用方法モーダルの制御
+const howToUseBtn = document.getElementById('howToUseBtn');
+const howToUseOverlay = document.getElementById('howToUseOverlay');
+const howToUseClose = document.getElementById('howToUseClose');
+
+// [How to use]ボタンをクリックしたときにモーダルを開く
+howToUseBtn.addEventListener('click', () => {
+    howToUseOverlay.classList.add('show');
+});
+
+// 閉じるボタンをクリックしたときにモーダルを閉じる
+howToUseClose.addEventListener('click', () => {
+    howToUseOverlay.classList.remove('show');
+});
+
+// オーバーレイ（背景）をクリックしたときにモーダルを閉じる
+howToUseOverlay.addEventListener('click', (e) => {
+    if (e.target === howToUseOverlay) {
+        howToUseOverlay.classList.remove('show');
+    }
+});
+
+// ESCキーを押したときに使用方法モーダルを閉じる
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+        // 使用方法モーダルが表示されている場合
+        if (howToUseOverlay.classList.contains('show')) {
+            howToUseOverlay.classList.remove('show');
+        }
+    }
+});
+
+// ========================================
+// 言語切り替え機能
+// ========================================
+
+// 多言語辞書
+const translations = {
+    ja: {
+        title: '📄 PDF編集ツール',
+        subtitle: '2つのPDFを読み込んで、ページを自由に移動・コピー・削除できます',
+        howToUseBtn: '❓ How to use',
+        leftPdf: '左側のPDF',
+        rightPdf: '右側のPDF',
+        loading: '読み込み中...',
+        cancelLoading: '読み込みをキャンセル',
+        dragDropText: '📎 PDFファイルをドラッグ＆ドロップ',
+        selectFile: 'ファイルを選択',
+        downloadLeft: '💾 左側のPDFをダウンロード',
+        downloadRight: '💾 右側のPDFをダウンロード',
+        deletePage: '🗑️ ページを削除',
+        generatingPdf: 'PDFを生成中...',
+        pages: 'ページ',
+        cancelProgress: '✕ キャンセル (ESC)',
+        usageTitle: '使用方法',
+        loadPdfTitle: '📥 PDFファイルの読み込み',
+        loadPdfMethod1: '<strong>方法1:</strong> 「ファイルを選択」ボタンをクリックしてPDFを選択',
+        loadPdfMethod2: '<strong>方法2:</strong> PDFファイルをアップロードエリアにドラッグ＆ドロップ',
+        loadPdfNote: '左側と右側のパネルに、それぞれ異なるPDFを読み込めます',
+        movePageTitle: '🔄 ページの移動',
+        movePageDesc1: '同じPDF内でページを並べ替えるには、ページサムネイルをドラッグして目的の位置にドロップ',
+        movePageDesc2: 'プレビューラインが挿入位置を示します',
+        copyPageTitle: '📋 ページのコピー',
+        copyPageDesc1: '一方のパネルから他方のパネルにページをドラッグ＆ドロップ',
+        copyPageDesc2: '元のページはソースPDFに残り、コピーが宛先PDFに追加されます',
+        deletePageTitle: '🗑️ ページの削除',
+        deletePageDesc1: '削除したいページサムネイルを右クリック',
+        deletePageDesc2: 'コンテキストメニューから「🗑️ ページを削除」を選択',
+        deletePageNote: '<strong>注意:</strong> PDFには最低1ページが必要です',
+        zoomPageTitle: '🔍 ページの拡大表示',
+        zoomPageDesc1: '任意のページサムネイルをクリック',
+        zoomPageDesc2: 'モーダルウィンドウでページが拡大表示されます',
+        zoomPageDesc3: '✕ボタンまたはモーダルの外側をクリックして閉じます',
+        downloadPdfTitle: '💾 編集済みPDFのダウンロード',
+        downloadPdfDesc1: '各パネル下部の「💾 左側のPDFをダウンロード」または「💾 右側のPDFをダウンロード」ボタンをクリック',
+        downloadPdfDesc2: '進捗バーで生成状況を確認できます',
+        downloadPdfDesc3: 'ESCキーまたは「✕ キャンセル」ボタンで操作をキャンセルできます',
+        keyboardShortcutTitle: '⚡ キーボードショートカット',
+        keyboardShortcutEsc: '<strong>ESC:</strong> PDF生成のキャンセル、またはモーダルウィンドウを閉じる',
+        keyboardShortcutRightClick: '<strong>右クリック:</strong> ページサムネイルのコンテキストメニューを開く',
+        securityTitle: '🔒 セキュリティ',
+        securityDesc1: '全ての処理はブラウザ内で完結します',
+        securityDesc2: 'PDFファイルがサーバに送信されることはありません',
+        // ステータスメッセージ
+        pageMoved: 'ページを移動しました',
+        pageCopied: 'ページをコピーしました（元のページは残っています）',
+        pageDeleted: 'ページを削除しました',
+        cannotDeleteLastPage: '最後のページは削除できません',
+        pdfNotUploaded: 'のPDFがアップロードされていません。まずPDFをアップロードしてください。',
+        noPages: 'のPDFにページがありません',
+        generating: 'のPDFを生成中...',
+        cancelling: 'キャンセル中...',
+        cancelled: 'のPDF生成をキャンセルしました',
+        downloaded: 'のPDFをダウンロードしました',
+        generationFailed: 'のPDFの生成に失敗しました: ',
+        left: '左側',
+        right: '右側',
+        page: 'ページ',
+        langLabel: '日本語'
+    },
+    en: {
+        title: '📄 PDF Editor Tool',
+        subtitle: 'Load two PDFs and freely move, copy, and delete pages',
+        howToUseBtn: '❓ How to use',
+        leftPdf: 'Left PDF',
+        rightPdf: 'Right PDF',
+        loading: 'Loading...',
+        cancelLoading: 'Cancel Loading',
+        dragDropText: '📎 Drag & Drop PDF File',
+        selectFile: 'Select File',
+        downloadLeft: '💾 Download Left PDF',
+        downloadRight: '💾 Download Right PDF',
+        deletePage: '🗑️ Delete Page',
+        generatingPdf: 'Generating PDF...',
+        pages: 'Pages',
+        cancelProgress: '✕ Cancel (ESC)',
+        usageTitle: 'How to Use',
+        loadPdfTitle: '📥 Loading PDF Files',
+        loadPdfMethod1: '<strong>Method 1:</strong> Click "Select File" button to choose a PDF',
+        loadPdfMethod2: '<strong>Method 2:</strong> Drag & drop PDF file to upload area',
+        loadPdfNote: 'You can load different PDFs in the left and right panels',
+        movePageTitle: '🔄 Moving Pages',
+        movePageDesc1: 'To reorder pages within the same PDF, drag a page thumbnail and drop it at the desired position',
+        movePageDesc2: 'A preview line indicates the insertion position',
+        copyPageTitle: '📋 Copying Pages',
+        copyPageDesc1: 'Drag & drop a page from one panel to another',
+        copyPageDesc2: 'The original page remains in the source PDF, and a copy is added to the destination PDF',
+        deletePageTitle: '🗑️ Deleting Pages',
+        deletePageDesc1: 'Right-click on the page thumbnail you want to delete',
+        deletePageDesc2: 'Select "🗑️ Delete Page" from the context menu',
+        deletePageNote: '<strong>Note:</strong> A PDF must have at least one page',
+        zoomPageTitle: '🔍 Zooming Pages',
+        zoomPageDesc1: 'Click on any page thumbnail',
+        zoomPageDesc2: 'The page will be displayed enlarged in a modal window',
+        zoomPageDesc3: 'Click the ✕ button or outside the modal to close',
+        downloadPdfTitle: '💾 Downloading Edited PDF',
+        downloadPdfDesc1: 'Click "💾 Download Left PDF" or "💾 Download Right PDF" button at the bottom of each panel',
+        downloadPdfDesc2: 'You can check the generation status with the progress bar',
+        downloadPdfDesc3: 'Press ESC key or click "✕ Cancel" button to cancel the operation',
+        keyboardShortcutTitle: '⚡ Keyboard Shortcuts',
+        keyboardShortcutEsc: '<strong>ESC:</strong> Cancel PDF generation or close modal window',
+        keyboardShortcutRightClick: '<strong>Right-click:</strong> Open context menu for page thumbnail',
+        securityTitle: '🔒 Security',
+        securityDesc1: 'All processing is done within the browser',
+        securityDesc2: 'PDF files are never sent to the server',
+        // Status messages
+        pageMoved: 'Page moved',
+        pageCopied: 'Page copied (original page remains)',
+        pageDeleted: 'Page deleted',
+        cannotDeleteLastPage: 'Cannot delete the last page',
+        pdfNotUploaded: ' PDF is not uploaded. Please upload a PDF first.',
+        noPages: ' PDF has no pages',
+        generating: ' PDF generating...',
+        cancelling: 'Cancelling...',
+        cancelled: ' PDF generation cancelled',
+        downloaded: ' PDF downloaded',
+        generationFailed: ' PDF generation failed: ',
+        left: 'Left',
+        right: 'Right',
+        page: 'Page',
+        langLabel: 'English'
+    }
+};
+
+// 現在の言語（デフォルトは日本語）
+let currentLanguage = 'ja';
+
+// 言語を切り替える関数
+function switchLanguage(lang) {
+    currentLanguage = lang;
+    
+    // HTML要素のテキストを更新
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+            element.innerHTML = translations[lang][key];
+        }
+    });
+    
+    // PDFラベルを更新（ファイルが読み込まれている場合は維持）
+    updatePdfLabelsForLanguage();
+    
+    // ページアイテムのラベルを更新
+    updatePageLabelsForLanguage();
+    
+    // ステータスメッセージを更新
+    updateDynamicTexts();
+    
+    // 言語ラベルを更新
+    document.getElementById('currentLangLabel').textContent = translations[lang].langLabel;
+    
+    // HTML lang属性を更新
+    document.documentElement.lang = lang;
+    
+    // ローカルストレージに保存
+    localStorage.setItem('pdfEditorLanguage', lang);
+}
+
+// PDFラベルを言語切り替え時に更新
+function updatePdfLabelsForLanguage() {
+    for (let i = 1; i <= 2; i++) {
+        const label = document.getElementById(`pdfLabel${i}`);
+        if (label) {
+            const icon = label.querySelector('.pdf-icon');
+            const iconText = icon ? icon.textContent : (i === 1 ? 'L' : 'R');
+            
+            // ファイル名が表示されているかチェック
+            const hasFileName = label.innerHTML.includes('</div>') && 
+                               !label.textContent.includes(translations.ja.leftPdf) && 
+                               !label.textContent.includes(translations.ja.rightPdf) &&
+                               !label.textContent.includes(translations.en.leftPdf) && 
+                               !label.textContent.includes(translations.en.rightPdf);
+            
+            if (!hasFileName) {
+                // ファイル名がない場合は、言語に応じたデフォルトラベルを表示
+                const defaultLabel = i === 1 ? translations[currentLanguage].leftPdf : translations[currentLanguage].rightPdf;
+                label.innerHTML = `
+                    <div class="pdf-icon">${iconText}</div>
+                    <span data-i18n="${i === 1 ? 'leftPdf' : 'rightPdf'}">${defaultLabel}</span>
+                `;
+            }
+        }
+    }
+}
+
+// ページアイテムのラベルを言語切り替え時に更新
+function updatePageLabelsForLanguage() {
+    // すべてのページアイテムのpage-numberラベルを取得して更新
+    document.querySelectorAll('.page-number').forEach(pageNumberDiv => {
+        const pdfNumber = parseInt(pageNumberDiv.dataset.pdfNumber);
+        const pageNum = parseInt(pageNumberDiv.dataset.pageNum);
+        
+        if (pdfNumber && pageNum) {
+            const sideLabel = pdfNumber === 1 ? (currentLanguage === 'ja' ? '左' : 'L') : (currentLanguage === 'ja' ? '右' : 'R');
+            const sideText = currentLanguage === 'ja' ? '側' : '';
+            pageNumberDiv.textContent = `${sideLabel}${sideText} - P.${pageNum}`;
+        }
+    });
+}
+
+// 動的なテキスト（プログレスバーなど）を更新
+function updateDynamicTexts() {
+    // プログレスバーの詳細テキストを更新
+    const progressDetails = document.getElementById('progressDetails');
+    if (progressDetails) {
+        const currentText = progressDetails.textContent;
+        const match = currentText.match(/(\d+)\s*\/\s*(\d+)/);
+        if (match) {
+            const current = match[1];
+            const total = match[2];
+            progressDetails.innerHTML = `${current} / ${total} <span data-i18n="pages">${translations[currentLanguage].pages}</span>`;
+        }
+    }
+}
+
+// 言語トグルスイッチのイベントリスナー
+const langToggle = document.getElementById('langToggle');
+langToggle.addEventListener('click', () => {
+    const newLang = currentLanguage === 'ja' ? 'en' : 'ja';
+    langToggle.classList.toggle('active');
+    switchLanguage(newLang);
+});
+
+// ページ読み込み時に保存された言語設定を復元
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLanguage = localStorage.getItem('pdfEditorLanguage');
+    if (savedLanguage && savedLanguage !== 'ja') {
+        currentLanguage = savedLanguage;
+        langToggle.classList.add('active');
+        switchLanguage(savedLanguage);
+    }
+});
+
+// 言語を取得する関数（他の関数から使用）
+function getTranslation(key) {
+    return translations[currentLanguage][key] || key;
 }
