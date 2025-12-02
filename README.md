@@ -851,4 +851,4 @@ SOFTWARE.
 ---
 
 **Last Updated**: December 2025  
-**Version**: 2.1 (Visual Editor with i18n Support)  
+**Version**: 0.3.0 (Visual Editor with i18n Support)
