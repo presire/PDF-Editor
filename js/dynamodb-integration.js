@@ -19,6 +19,10 @@ function getCsrfToken() {
  * @param {number} numPages - PDFのページ数（オプション）
  */
 async function savePDFLogToDynamoDB(filename, pdfNumber, numPages = 0) {
+    if (typeof ENABLE_DYNAMODB_LOG !== 'undefined' && !ENABLE_DYNAMODB_LOG) {
+        return false;
+    }
+
     try {
         // 現在の日時を取得（日本時間）
         const now = new Date();

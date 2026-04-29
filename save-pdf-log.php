@@ -44,6 +44,11 @@ function sendJsonResponse($success, $message, $data = null, $httpStatus = 200) {
     exit();
 }
 
+// DynamoDBログが無効の場合は何もせず成功を返す
+if (!ENABLE_DYNAMODB_LOG) {
+    sendJsonResponse(true, 'Logging is disabled');
+}
+
 // 同一オリジン検証 → CSRF検証 → レート制限
 requireSameOrigin();
 requireValidCsrfToken();

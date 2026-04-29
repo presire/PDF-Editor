@@ -349,6 +349,7 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
     </div>
 
     <!-- DynamoDB連携機能 -->
+    <script>var ENABLE_DYNAMODB_LOG = <?php echo ENABLE_DYNAMODB_LOG ? 'true' : 'false'; ?>;</script>
     <script src="js/dynamodb-integration.js"></script>
 
     <!-- qpdf連携機能（パスワード付きPDF対応） -->

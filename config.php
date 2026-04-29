@@ -72,6 +72,9 @@ define('MAX_JSON_PAYLOAD', 4 * 1024);
 // AWS DynamoDB 設定
 // ============================================
 
+// DynamoDBへのログ記録を有効にするかどうか（true: 有効, false: 無効）
+define('ENABLE_DYNAMODB_LOG', false);
+
 // PDFアップロードログを保存するテーブル名
 define('DYNAMODB_TABLE_LOG', 'PDFUploadLogs');
 
