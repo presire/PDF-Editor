@@ -64,6 +64,10 @@ define('RATE_LIMIT_LOG_WINDOW',   60);
 define('RATE_LIMIT_DECRYPT_REQUESTS', 10);
 define('RATE_LIMIT_DECRYPT_WINDOW',   300);
 
+// レート制限: PDF組み立てエンドポイント（IPあたり 300秒に N 回）
+define('RATE_LIMIT_ASSEMBLE_REQUESTS', 10);
+define('RATE_LIMIT_ASSEMBLE_WINDOW',   300);
+
 // JSON ペイロードの最大サイズ（バイト）
 define('MAX_JSON_PAYLOAD', 4 * 1024);
 

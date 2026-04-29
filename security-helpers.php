@@ -206,6 +206,46 @@ function enforceRateLimit($bucket, $limit, $windowSeconds) {
 }
 
 // ============================================
+// CSP Nonce
+// ============================================
+
+/**
+ * CSP用のnonceを生成する（リクエストごとに1回）
+ *
+ * @return string Base64エンコードされたnonce
+ */
+function generateCspNonce() {
+    static $nonce = null;
+    if ($nonce === null) {
+        $nonce = base64_encode(random_bytes(16));
+    }
+    return $nonce;
+}
+
+/**
+ * Content-Security-Policyヘッダーを送出する
+ *
+ * @param string $nonce generateCspNonce() で生成したnonce
+ */
+function sendCspHeader($nonce) {
+    $nonceDirective = "'nonce-" . $nonce . "'";
+    $policy = implode('; ', [
+        "default-src 'self'",
+        "script-src 'self' " . $nonceDirective,
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "img-src 'self' data: blob:",
+        "font-src 'self' data: https://fonts.gstatic.com",
+        "connect-src 'self'",
+        "worker-src 'self' blob:",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "frame-ancestors 'self'",
+        "form-action 'self'",
+    ]);
+    header('Content-Security-Policy: ' . $policy);
+}
+
+// ============================================
 // 入力サニタイズ
 // ============================================
 

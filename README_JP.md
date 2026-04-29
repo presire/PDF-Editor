@@ -183,6 +183,7 @@ https://your-domain.example.com/pdf/
 
 | 定数 | 用途 | 既定値 |
 |---|---|---|
+| `ENABLE_DYNAMODB_LOG` | DynamoDBへのログ記録を有効にする | `false` |
 | `DYNAMODB_TABLE_LOG` | アップロードログ保存先テーブル名 | `'PDFUploadLogs'` |
 
 ### Apache 側設定

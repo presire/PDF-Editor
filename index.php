@@ -16,12 +16,16 @@ $csrfToken = getCsrfToken();
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: SAMEORIGIN');
 header('Referrer-Policy: strict-origin-when-cross-origin');
+
+// CSP nonce を生成し、CSPヘッダーを送出
+$cspNonce = generateCspNonce();
+sendCspHeader($cspNonce);
 ?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <!-- 初期テーマ適用 (FOUC回避: localStorage > prefers-color-scheme) -->
-    <script>
+    <script nonce="<?php echo htmlspecialchars($cspNonce, ENT_QUOTES, 'UTF-8'); ?>">
         (function() {
             try {
                 var stored = localStorage.getItem('pdfEditorTheme');
@@ -349,7 +353,7 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
     </div>
 
     <!-- DynamoDB連携機能 -->
-    <script>var ENABLE_DYNAMODB_LOG = <?php echo ENABLE_DYNAMODB_LOG ? 'true' : 'false'; ?>;</script>
+    <script nonce="<?php echo htmlspecialchars($cspNonce, ENT_QUOTES, 'UTF-8'); ?>">var ENABLE_DYNAMODB_LOG = <?php echo ENABLE_DYNAMODB_LOG ? 'true' : 'false'; ?>;</script>
     <script src="js/dynamodb-integration.js"></script>
 
     <!-- qpdf連携機能（パスワード付きPDF対応） -->

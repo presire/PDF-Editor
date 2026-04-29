@@ -61,14 +61,8 @@ Options -Indexes
     Header set Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
 
     # Content-Security-Policy
-    # - default-src: self のみ
-    # - script-src: PDF.js / pdf-lib のために 'self' のみ（インラインJSは index.php 内のデバッグ用のみ。本番では削除推奨）
-    # - style-src: index.php 内にインライン <style> があるため 'unsafe-inline' を許可
-    # - img-src: data: と blob: を許可（PDFのサムネ canvas 由来）
-    # - worker-src: pdf.worker.min.js 用
-    # - connect-src: same-origin のみ
-    # - frame-ancestors: クリックジャッキング対策
-    Header set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'"
+    # CSPヘッダーは index.php 内で nonce 付きで動的に生成するため、
+    # ここでは設定しない（重複すると最も厳しいポリシーが適用されるため）
 
     # Cross-Origin リソース分離
     Header set Cross-Origin-Opener-Policy "same-origin"

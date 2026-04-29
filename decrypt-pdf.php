@@ -173,7 +173,7 @@ try {
     $returnVar = 0;
     exec($command, $output, $returnVar);
 
-    if ($returnVar !== 0) {
+    if ($returnVar !== 0 && $returnVar !== 3) {
         // 失敗内容はサーバログのみ（パスワードを含むコマンドはログ出力しない）
         error_log('decrypt-pdf: qpdf failed (rc=' . $returnVar . ')');
         sendJsonResponse(false, 'Failed to decrypt PDF. The password may be incorrect.', null, 400);

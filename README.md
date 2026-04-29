@@ -183,6 +183,7 @@ All key settings live in [`config.php`](config.php).
 
 | Constant | Purpose | Default |
 |---|---|---|
+| `ENABLE_DYNAMODB_LOG` | Enable DynamoDB upload logging | `false` |
 | `DYNAMODB_TABLE_LOG` | Table name for upload logs | `'PDFUploadLogs'` |
 
 ### Apache settings
