@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- 背景 -->
+  <rect x="10" y="5" width="60" height="80" rx="3" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+  
+  <!-- PDF文字 -->
+  <text x="40" y="50" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">PDF</text>
+  
+  <!-- ページの折り目 -->
+  <path d="M 60 5 L 70 5 L 70 15 Z" fill="#c0392b"/>
+  <path d="M 70 5 L 70 15 L 60 15" fill="none" stroke="#c0392b" stroke-width="2"/>
+  
+  <!-- 編集ペン -->
+  <g transform="translate(60, 60)">
+    <!-- ペン本体 -->
+    <rect x="0" y="0" width="8" height="30" rx="1" fill="#3498db" stroke="#2980b9" stroke-width="1"/>
+    <polygon points="4,30 0,35 8,35" fill="#f39c12"/>
+    <!-- ペン先 -->
+    <line x1="4" y1="35" x2="4" y2="38" stroke="#34495e" stroke-width="2"/>
+    <!-- ハイライト -->
+    <rect x="2" y="5" width="2" height="10" fill="#5dade2" opacity="0.6"/>
+  </g>
+  
+  <!-- 編集線（波線） -->
+  <path d="M 15 65 Q 20 63 25 65 T 35 65" stroke="#95a5a6" stroke-width="2" fill="none" opacity="0.5"/>
+  <path d="M 15 72 Q 20 70 25 72 T 35 72" stroke="#95a5a6" stroke-width="2" fill="none" opacity="0.5"/>
+</svg>

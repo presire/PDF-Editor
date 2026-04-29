@@ -51,6 +51,30 @@ define('ALLOWED_EXTENSIONS', ['pdf']);
 // 許可するMIMEタイプ
 define('ALLOWED_MIME_TYPES', ['application/pdf']);
 
+// 許可するオリジン（HTTPSのみ）
+// 空配列のままにするとリクエスト時のホストを採用します。
+// 本番ドメインを明示する場合は ['https://example.com'] のように記述してください。
+define('ALLOWED_ORIGINS', []);
+
+// レート制限: ログ書き込みエンドポイント（IPあたり 60秒に N 回）
+define('RATE_LIMIT_LOG_REQUESTS', 20);
+define('RATE_LIMIT_LOG_WINDOW',   60);
+
+// レート制限: 復号エンドポイント（IPあたり 300秒に N 回）
+define('RATE_LIMIT_DECRYPT_REQUESTS', 10);
+define('RATE_LIMIT_DECRYPT_WINDOW',   300);
+
+// JSON ペイロードの最大サイズ（バイト）
+define('MAX_JSON_PAYLOAD', 4 * 1024);
+
+
+// ============================================
+// AWS DynamoDB 設定
+// ============================================
+
+// PDFアップロードログを保存するテーブル名
+define('DYNAMODB_TABLE_LOG', 'PDFUploadLogs');
+
 
 // ============================================
 // タイムゾーン設定

@@ -5,11 +5,11 @@
 # ============================================
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    
-    # HTTPSへのリダイレクト（本番環境で有効化）
-    # RewriteCond %{HTTPS} off
-    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-    
+
+    # HTTPSへのリダイレクト
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
     # index.phpをデフォルトページに設定
     DirectoryIndex index.php index.html
 </IfModule>
@@ -21,46 +21,68 @@
 # ディレクトリリスティングを無効化
 Options -Indexes
 
-# config.phpへの直接アクセスを拒否
-<Files "config.php">
-    Order allow,deny
-    Deny from all
-</Files>
-
-# .gitファイルへのアクセスを拒否
-<FilesMatch "^\.git">
-    Order allow,deny
-    Deny from all
+# 機密ファイル・include専用ファイルへの直接アクセスを拒否
+<FilesMatch "^(config\.php|aws-config\.php|dynamodb-client\.php|security-helpers\.php|diagnose\.php|credentials|\.env|composer\.(json|lock))$">
+    Require all denied
 </FilesMatch>
+
+# ドットファイル（.htaccess, .git, .aws など）への直接アクセスを拒否
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# .git / .aws ディレクトリへのアクセスを拒否
+<DirectoryMatch "/(\.git|\.aws)(/|$)">
+    Require all denied
+</DirectoryMatch>
+
+# vendor ディレクトリへのアクセスを拒否
+<DirectoryMatch "/vendor(/|$)">
+    Require all denied
+</DirectoryMatch>
 
 # ============================================
 # セキュリティヘッダー
 # ============================================
 <IfModule mod_headers.c>
-    # XSS保護
-    Header set X-XSS-Protection "1; mode=block"
-    
     # コンテンツタイプスニッフィング防止
     Header set X-Content-Type-Options "nosniff"
-    
+
     # クリックジャッキング対策
     Header set X-Frame-Options "SAMEORIGIN"
-    
+
     # Referrer-Policy
     Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # HSTS（HTTPS運用前提・1年・サブドメイン含む・preload対応）
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+    # Permissions-Policy（不要な機能を全停止）
+    Header set Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+
+    # Content-Security-Policy
+    # - default-src: self のみ
+    # - script-src: PDF.js / pdf-lib のために 'self' のみ（インラインJSは index.php 内のデバッグ用のみ。本番では削除推奨）
+    # - style-src: index.php 内にインライン <style> があるため 'unsafe-inline' を許可
+    # - img-src: data: と blob: を許可（PDFのサムネ canvas 由来）
+    # - worker-src: pdf.worker.min.js 用
+    # - connect-src: same-origin のみ
+    # - frame-ancestors: クリックジャッキング対策
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'"
+
+    # Cross-Origin リソース分離
+    Header set Cross-Origin-Opener-Policy "same-origin"
+    Header set Cross-Origin-Resource-Policy "same-origin"
+
+    # 旧来の X-XSS-Protection は最新ブラウザでは無視され、古いブラウザで脆弱性を生むため設定しない
 </IfModule>
 
 # ============================================
 # MIME タイプ設定
 # ============================================
 <IfModule mod_mime.c>
-    # JavaScript
     AddType application/javascript js
-    
-    # CSS
     AddType text/css css
-    
-    # PDF
     AddType application/pdf pdf
 </IfModule>
 
@@ -69,17 +91,17 @@ Options -Indexes
 # ============================================
 <IfModule mod_expires.c>
     ExpiresActive On
-    
+
     # 画像ファイル
     ExpiresByType image/jpeg "access plus 1 month"
     ExpiresByType image/png "access plus 1 month"
     ExpiresByType image/gif "access plus 1 month"
     ExpiresByType image/svg+xml "access plus 1 month"
-    
+
     # CSS/JavaScript
     ExpiresByType text/css "access plus 1 week"
     ExpiresByType application/javascript "access plus 1 week"
-    
+
     # PDF
     ExpiresByType application/pdf "access plus 1 hour"
 </IfModule>
@@ -88,7 +110,6 @@ Options -Indexes
 # 圧縮設定
 # ============================================
 <IfModule mod_deflate.c>
-    # テキストベースのファイルを圧縮
     AddOutputFilterByType DEFLATE text/html
     AddOutputFilterByType DEFLATE text/css
     AddOutputFilterByType DEFLATE text/javascript
@@ -102,14 +123,19 @@ Options -Indexes
 <IfModule mod_php.c>
     # メモリ制限
     php_value memory_limit 256M
-    
+
     # 最大実行時間
     php_value max_execution_time 300
-    
+
     # アップロードサイズ
     php_value upload_max_filesize 100M
     php_value post_max_size 100M
-    
-    # エラー表示（本番環境ではOffに）
+
+    # エラー表示は無効化
     php_flag display_errors Off
+
+    # セッションCookieのセキュリティ
+    php_flag session.cookie_secure   On
+    php_flag session.cookie_httponly On
+    php_value session.cookie_samesite "Strict"
 </IfModule>

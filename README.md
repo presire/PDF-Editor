@@ -1,854 +1,462 @@
-# PDF Editor Tool - Visual Editor
+# PDF Editor - Visual Editor
 
-> Secure Visual PDF Page Editor That Works Entirely in Your Browser
+A browser-based PDF editing tool. Open two PDFs side by side and intuitively reorder, copy, and delete pages. PDF content itself is never sent to the server — all editing is performed entirely in the browser.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)  
-[![PDF.js](https://img.shields.io/badge/PDF.js-v3.11-red)](https://mozilla.github.io/pdf.js/)  
-[![pdf-lib](https://img.shields.io/badge/pdf--lib-latest-orange)](https://pdf-lib.js.org/)  
+> Note: The server is contacted only for password-protected PDF decryption and (optionally) for upload-log recording, as described below.
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [File Structure](#file-structure)
-- [Setup](#setup)
-- [How to Use](#how-to-use)
-  - [Switching Languages](#switching-languages)
-  - [Loading PDF Files](#loading-pdf-files)
-  - [Moving Pages](#moving-pages)
-  - [Copying Pages](#copying-pages)
-  - [Deleting Pages](#deleting-pages)
-  - [Viewing Pages](#viewing-pages)
-  - [Downloading Edited PDFs](#downloading-edited-pdfs)
-- [Technical Specifications](#technical-specifications)
-- [Browser Compatibility](#browser-compatibility)
-- [Security](#security)
-- [Troubleshooting](#troubleshooting)
-- [FAQ](#faq)
-- [License](#license)
-
-## Overview
-
-This tool is a visual PDF page editing application that runs in your web browser. Load two PDF files side by side and freely move, copy, and delete pages between them. Since no server upload is required and all processing is completed client-side, you can edit PDF files in a secure environment.
-
-### Features
-
-- 🔒 **Completely Client-Side**: Files are never sent to a server; all processing happens within your browser
-- 👁️ **Visual Interface**: See thumbnail previews of all pages for intuitive editing
-- 🔄 **Dual PDF Panel**: Load and work with two PDFs simultaneously
-- 🖱️ **Drag & Drop**: Smooth page reordering and copying between PDFs
-- 🎯 **Context Menu**: Right-click pages for quick actions
-- 🔍 **Page Preview**: Click any page to view it in full size
-- 📊 **Progress Tracking**: Real-time progress bar during PDF generation
-- 🚀 **Fast Processing**: Efficient PDF manipulation powered by pdf-lib and PDF.js
-- 🌐 **Multilingual Support**: Switch between Japanese and English with one click
-
-## Key Features
-
-### Visual Page Management
-- ✅ Thumbnail preview of all pages
-- ✅ Drag and drop to reorder pages within a PDF
-- ✅ Drag and drop to copy pages between PDFs
-- ✅ Visual feedback during drag operations
-- ✅ Click to enlarge any page
-
-### Page Operations
-- ✅ **Move Pages**: Drag pages to reorder within the same PDF
-- ✅ **Copy Pages**: Drag pages from one PDF to another
-- ✅ **Delete Pages**: Right-click context menu or dedicated button
-- ✅ **Batch Operations**: Work with multiple pages at once
-
-### User Interface
-- ✅ Side-by-side dual PDF panels
-- ✅ Drag & drop file loading
-- ✅ Modal window for enlarged page view
-- ✅ Progress bar with cancellation support
-- ✅ Real-time status messages
-- ✅ Keyboard shortcuts (ESC to cancel operations)
-- ✅ **Language Toggle**: Switch between Japanese and English instantly
-
-### File Management
-- ✅ Download edited PDFs independently
-- ✅ Original files remain unchanged
-- ✅ Automatic filename generation
-- ✅ Support for large PDFs with progress tracking
-
-### Language Support
-- ✅ **Japanese/English Toggle**: Switch languages with a single click
-- ✅ **Persistent Settings**: Language preference saved in browser
-- ✅ **Complete Translation**: All UI elements, messages, and labels are translated
-- ✅ **Real-time Updates**: Existing pages update immediately when language changes
-
-## File Structure
-
-```
-📁 Project Root
-├── 📄 PDF-Editor.html           # Main HTML file (standalone version)
-├── 📄 index.php                 # PHP version with configuration support
-├── 📄 config.php                # Configuration file (PHP version only)
-├── 📄 .htaccess                 # Apache configuration (PHP version only)
-├── 📄 README.md                 # This file
-├── 📄 README_JP.md              # Japanese README
-├── 📁 css/
-│   ├── 📄 PDF-Editor.css        # Custom styles
-│   └── 📄 tailwind.css          # Custom styles
-├── 📁 js/
-│   ├── 📄 pdf.min.js            # PDF.js library for rendering
-│   ├── 📄 pdf-lib.min.js        # pdf-lib library for manipulation
-│   └── 📄 PDF-Editor.js         # Main application logic with i18n
-└── 📁 img/
-    └── 📄 (screenshots)         # Usage screenshots
-```
-
-### File Descriptions
-
-#### `PDF-Editor.html`
-Standalone HTML file containing the application structure, dual-panel layout, modal window, progress overlay, and language toggle switch. This version works without a web server.
-
-#### `index.php`
-PHP version of the main file with additional configuration support. Provides enhanced security features and server-side configuration management. **Requires PHP 7.0 or higher and Apache web server.**
-
-#### `config.php`
-Configuration file for PHP version. Contains:
-- Application settings (name, version)
-- Path configurations
-- Security settings (file size limits, allowed file types)
-- Debug mode settings
-- Timezone configuration
-- Utility functions for validation
-
-**Security Note**: Direct access to this file is blocked by .htaccess
-
-#### `.htaccess`
-Apache configuration file for PHP version. Provides:
-- URL rewriting rules
-- Security headers (XSS protection, clickjacking prevention)
-- Access control (blocks direct access to config.php)
-- MIME type configuration
-- Cache control settings
-- Compression settings
-- PHP configuration overrides
-
-#### `css/PDF-Editor.css`
-Custom stylesheet providing visual design for the dual-panel interface, page thumbnails, drag-and-drop feedback, modal window, progress bar, and language toggle.
-
-#### `css/tailwind.css`
-Tailwind CSS framework file for utility-first styling. Provides responsive design utilities, spacing, colors, and layout classes used throughout the application. This can be either:
-- A custom Tailwind build with only the utilities used in the project
-- The full Tailwind CSS library
-- A CDN-linked version (if using remote loading)
-
-**Note**: If you're using a CDN version of Tailwind CSS, this file may be optional. Check the HTML file's `<link>` tags to see if Tailwind is loaded via CDN.
-
-#### `js/PDF-Editor.js`
-Main application logic including:
-- PDF loading and rendering
-- Drag and drop functionality
-- Page manipulation (move, copy, delete)
-- PDF generation with progress tracking
-- Event handling and user interactions
-- **Internationalization (i18n) system**
-- **Language switching functionality**
-
-#### `js/pdf.min.js`
-PDF.js library for rendering PDF pages as canvas elements for thumbnail display.
-
-#### `js/pdf-lib.min.js`
-pdf-lib library for PDF manipulation - loading, modifying, and saving PDF documents.
-
-## Setup
-
-### Requirements
-
-- Modern web browser
-  - **Recommended**: Chrome 90+, Edge 90+, Opera 76+
-  - **Supported**: Firefox 88+
-  - **Limited Support**: Safari (may have compatibility issues)
-
-**For PHP Version (index.php):**
-- PHP 7.0 or higher
-- Apache web server with mod_rewrite enabled
-- Basic file permissions (read/write for application files)
-
-### Installation Steps
-
-#### Option 1: Standalone HTML Version (Recommended for Local Use)
-
-1. **Download Files**
-   
-   Download all files and maintain the folder structure.
-
-2. **File Placement**
-   
-   ```
-   your-folder/
-   ├── PDF-Editor.html
-   ├── css/
-   │   ├── PDF-Editor.css
-   │   └── tailwind.css
-   ├── js/
-   │   ├── pdf.min.js
-   │   ├── pdf-lib.min.js
-   │   └── PDF-Editor.js
-   └── img/
-       └── (screenshots)
-   ```
-
-3. **Open in Browser**
-   
-   Double-click `PDF-Editor.html` or drag and drop it into your browser.
-
-> **Note**:  
-> When opening as a local file, some browsers may have restrictions on file selection functionality.  
-> In that case, use a simple HTTP server.
-
-```bash
-# Example using Python's simple HTTP server
-python -m http.server 8000
-# Access http://localhost:8000/PDF-Editor.html in your browser
-```
-
-#### Option 2: PHP Version (Recommended for Web Server Deployment)
-
-1. **Download All Files**
-   
-   Download all files including `index.php`, `config.php`, and `.htaccess`.
-
-2. **File Placement**
-   
-   ```
-   your-web-directory/
-   ├── index.php
-   ├── config.php
-   ├── .htaccess
-   ├── css/
-   │   ├── PDF-Editor.css
-   │   └── tailwind.css
-   ├── js/
-   │   ├── pdf.min.js
-   │   ├── pdf-lib.min.js
-   │   └── PDF-Editor.js
-   └── img/
-       └── (screenshots)
-   ```
-
-3. **Configure Apache**
-   
-   Ensure Apache has `mod_rewrite` and `mod_headers` enabled:
-   
-   ```bash
-   # On Ubuntu/Debian
-   sudo a2enmod rewrite
-   sudo a2enmod headers
-   sudo systemctl restart apache2
-   ```
-
-4. **Set File Permissions**
-   
-   ```bash
-   # Make config.php readable by web server
-   chmod 644 config.php
-   
-   # Make .htaccess readable
-   chmod 644 .htaccess
-   
-   # Ensure proper ownership (adjust www-data to your web server user)
-   chown -R www-data:www-data /path/to/your-web-directory
-   ```
-
-5. **Configure Settings (Optional)**
-   
-   Edit `config.php` to customize:
-   - Application name and version
-   - Maximum file size limit
-   - Debug mode (set to `false` for production)
-   - File paths if different from defaults
-
-6. **Access the Application**
-   
-   Navigate to your web server URL (e.g., `http://localhost/` or `https://yourdomain.com/`)
-
-7. **Security Check**
-   
-   - Verify that `config.php` cannot be accessed directly (should return 403 Forbidden)
-   - Test URL: `http://your-domain/config.php`
-   - Expected result: Access denied
-
-> **Production Environment Checklist**:
-> - [ ] Set `ENABLE_DEBUG` to `false` in config.php
-> - [ ] Enable HTTPS redirect in .htaccess (uncomment lines 10-11)
-> - [ ] Verify security headers are working
-> - [ ] Test that config.php is not directly accessible
-> - [ ] Check file upload limits match your requirements
-
-### Loading External Libraries
-
-The application automatically loads the following libraries from CDN:
-- PDF.js worker: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
-
-For offline use, download these libraries and update the URLs in the JavaScript file accordingly.
-
-## How to Use
-
-### Switching Languages
-
-**Location**: Top-right corner of the application
-
-**How to Switch**:
-1. Look for the language toggle switch in the top-right corner
-2. The current language is displayed (e.g., "日本語" or "English")
-3. Click the toggle switch to change languages
-4. The entire interface updates immediately:
-   - All buttons and labels
-   - Status messages
-   - Page thumbnails
-   - Modal windows
-   - Progress indicators
-
-**Language Persistence**:
-- Your language preference is automatically saved in browser storage
-- The selected language is remembered on your next visit
-- No account or login required
-
-**Supported Languages**:
-- 🇯🇵 Japanese (日本語)
-- 🇺🇸 English
-
-### Loading PDF Files
-
-#### Left Panel (Panel L)
-1. Click the **"Select File"** button in the left panel or drag and drop a PDF file onto the upload area
-2. The PDF will load and display page thumbnails
-3. File information is shown at the top of the panel
-
-#### Right Panel (Panel R)
-1. Click the **"Select File"** button in the right panel or drag and drop a PDF file onto the upload area
-2. The PDF will load and display page thumbnails
-3. Both PDFs can now be edited independently
-
-### Moving Pages
-
-**Within the Same PDF:**
-1. Click and hold on a page thumbnail
-2. Drag it to the desired position within the same panel
-3. Release to reorder the pages
-4. A preview line shows where the page will be inserted
-
-**Result**: Pages are reordered within the same PDF document.
-
-### Copying Pages
-
-**Between Different PDFs:**
-1. Click and hold on a page thumbnail in one panel (e.g., left panel)
-2. Drag it to a position in the other panel (e.g., right panel)
-3. Release to copy the page to the other PDF
-4. The original page remains in the source PDF
-
-**Result**: The page is copied to the destination PDF, and the original remains unchanged.
-
-### Deleting Pages
-
-**Method 1: Context Menu**
-1. Right-click on any page thumbnail
-2. Select **"🗑️ Delete Page"** from the context menu
-3. The page is immediately removed
-
-**Method 2: Delete Button**
-1. Click on a page thumbnail to select it
-2. Use the delete option (if implemented in UI)
-
-> **Note**: A PDF must have at least 1 page. You cannot delete all pages.
-
-### Viewing Pages
-
-**Enlarged View:**
-1. Click on any page thumbnail
-2. A modal window opens showing the page in full size
-3. Page number and total pages are displayed at the top
-4. Click the **✕** button or click outside the modal to close
-
-### Downloading Edited PDFs
-
-**Left PDF:**
-1. Click the **"💾 Download Left PDF"** button at the bottom of the left panel
-2. A progress bar appears showing the generation progress
-3. You can cancel the operation by clicking **"✕ Cancel (ESC)"** or pressing the ESC key
-4. When complete, the edited PDF is automatically downloaded
-
-**Right PDF:**
-1. Click the **"💾 Download Right PDF"** button at the bottom of the right panel
-2. Follow the same process as the left PDF
-
-> **Note**: The download button is only enabled after a PDF has been loaded.
-
-### Keyboard Shortcuts
-
-- **ESC**: Cancel PDF generation or close modal window
-- **Right-click**: Open context menu on page thumbnail
-
-## Technical Specifications
-
-### Technologies Used
-
-| Technology | Version | Purpose |
-|------|----------|------|
-| HTML5 | - | Page structure and markup |
-| CSS3 | - | Styling and animations |
-| Tailwind CSS | - | Utility-first CSS framework for responsive design |
-| JavaScript (ES6+) | - | Application logic |
-| PDF.js | v3.11 | PDF rendering and preview |
-| pdf-lib | Latest | PDF manipulation and generation |
-| Canvas API | - | Rendering page thumbnails |
-| LocalStorage API | - | Storing language preferences |
-
-### Internationalization (i18n) Implementation
-
-#### Language System
-- **Built-in Translation Dictionary**: Complete translations for Japanese and English
-- **Dynamic Updates**: All UI elements update in real-time when language changes
-- **Scope**: Covers all buttons, labels, messages, page indicators, and modal content
-- **Storage**: Language preference saved in browser's localStorage
-
-#### Translation Coverage
-- Application title and subtitle
-- File upload buttons and instructions
-- PDF panel labels (Left/Right)
-- Page thumbnails (L/R indicators)
-- Status messages (success, error, info)
-- Progress bar text and indicators
-- Modal window content
-- Context menu items
-- Help/usage instructions
-- All error and confirmation messages
-
-### Processing Flow
-
-#### PDF Loading
-1. User selects a PDF file via file input or drag & drop
-2. FileReader API loads the file into memory
-3. PDF.js parses each page and renders them as canvas elements
-4. Thumbnails are generated and displayed in the panel
-5. pdf-lib loads the PDF for manipulation
-6. Status messages appear in the selected language
-
-#### Page Moving (Within Same PDF)
-1. User drags a page thumbnail to a new position
-2. JavaScript tracks the drag operation and target position
-3. Page order array is updated on drop
-4. UI updates to reflect new order
-5. PDF is not regenerated until download
-
-#### Page Copying (Between PDFs)
-1. User drags a page from one panel to another
-2. Source page data is retrieved from pdf-lib document
-3. Page is copied to destination PDF's page array
-4. Destination panel UI is updated with new page
-5. Source PDF remains unchanged
-
-#### Page Deletion
-1. User right-clicks a page and selects delete
-2. Page is removed from the page array
-3. Validation ensures at least 1 page remains
-4. UI updates immediately
-5. PDF is not regenerated until download
-
-#### PDF Generation
-1. User clicks download button
-2. Progress bar appears with page count information (in selected language)
-3. New PDF document is created using pdf-lib
-4. Pages are copied one by one with progress updates
-5. Progress bar updates for each page copied
-6. Completed PDF is converted to Blob
-7. Blob is downloaded using browser's download API
-8. Progress bar disappears on completion
-
-### File Size Limits
-
-- **Recommended Maximum**: 50MB per PDF
-- **Theoretical Maximum**: Depends on browser memory
-- **Note**: Large PDFs may take longer to load and process
-
-### Supported PDF Versions
-
-- PDF 1.3 to 1.7
-- PDF 2.0 (partial support)
-
-### Page Count Limits
-
-- **Minimum Pages**: 1 page (at least 1 page must remain after deletion)
-- **Maximum Pages**: No limit (but depends on browser memory)
-
-### Performance Considerations
-
-- **Thumbnail Generation**: May take time for PDFs with many pages
-- **Drag Operations**: Optimized for smooth performance
-- **PDF Generation**: Monitored with progress bar, cancellable
-- **Memory Usage**: Increases with PDF size and page count
-
-## Browser Compatibility
-
-### Fully Supported Browsers
-
-✅ **Google Chrome 90+**
-- All features fully supported
-- Best performance
-- Hardware acceleration for canvas rendering
-
-✅ **Microsoft Edge 90+**
-- All features fully supported
-- Chromium-based, same performance as Chrome
-
-✅ **Opera 76+**
-- All features fully supported
-- Chromium engine based
-
-### Partially Supported Browsers
-
-⚠️ **Firefox 88+**
-- All core features supported
-- Drag & drop behavior may differ slightly
-- May require CORS configuration for local testing
-
-⚠️ **Safari**
-- Basic functionality works
-- May have performance issues with large PDFs
-- Some CSS animations may differ
-
-### Tested Environments
-
-- Google Chrome 120 and later
-- Microsoft Edge 120 and later
-- Opera 105 and later
-- Firefox 120 and later
-
-## Security
-
-### Security Features
-
-✅ **Client-Side Processing**
-- All PDF editing is completed within the browser
-- PDF files are never sent to a server
-- Works without internet connection (completely local)
-
-✅ **Privacy Protection**
-- Does not send file contents externally
-- Processing only in browser memory
-- All data is cleared when the page is closed
-
-✅ **Data Integrity**
-- Original PDF files are not modified
-- Edited PDFs are saved as new files
-- Original PDF quality is maintained
-
-✅ **No External Dependencies**
-- All processing is done locally
-- No third-party services involved
-- No tracking or analytics
-
-✅ **Local Storage Only**
-- Only language preference is stored locally
-- No sensitive data is saved
-- Clear storage anytime via browser settings
-
-### Security Best Practices
-
-#### 1. Create Backups
-Always create a backup of the original PDF files before editing.
-
-#### 2. Use in Trusted Environment
-- Avoid using on public computers
-- Keep malware protection software up to date
-- Use a trusted browser
-
-#### 3. Verify Files
-Open the edited PDF files to verify they have been edited as intended.
-
-#### 4. Clear Browser Cache
-After working with sensitive PDFs, consider clearing your browser cache and history.
-
-### Security Limitations
-
-⚠️ **Points to Note**
-
-1. **Browser Security**
-   - Browser extensions may be able to access data
-   - Not protected from keyloggers or malware
-
-2. **Data in Memory**
-   - PDF data exists in memory during processing
-   - Cleared when page is closed or navigated away
-
-3. **Protected PDFs**
-   - Password-protected PDFs cannot be opened
-   - PDFs with editing restrictions may not process correctly
-
-4. **Metadata**
-   - Some metadata may be lost during editing
-   - Form fields and annotations may not be preserved
-
-## Troubleshooting
-
-### Common Issues and Solutions
-
-#### ❌ "An error occurred" is displayed
-
-**Causes and Solutions:**
-
-1. **PDF file is corrupted**
-   - Check if it can be opened in another PDF viewer
-   - If possible, regenerate the PDF
-
-2. **Protected PDF**
-   - Remove password protection and try again
-   - Verify you have editing permissions
-
-3. **File size is too large**
-   - Recommended 50MB or less per file
-   - Split large files before processing
-
-4. **Browser memory shortage**
-   - Close other tabs
-   - Restart browser
-   - Use a PC with more memory
-
-#### ❌ Pages not displaying correctly
-
-**Solution:**
-- Refresh the browser page
-- Try loading the PDF again
-- Check browser console for error messages (F12)
-
-#### ❌ Drag and drop not working
-
-**Solution:**
-- Ensure JavaScript is enabled
-- Try using Chrome or Edge for best compatibility
-- Check if the file is a valid PDF
-
-#### ❌ Cannot delete a page
-
-**Explanation:**  
-This is intentional behavior. PDF files require at least 1 page, so you cannot delete the last remaining page.
-
-**Solution:**  
-Leave at least 1 page in the PDF.
-
-#### ❌ PDF generation is slow
-
-**Solution:**
-- This is normal for large PDFs with many pages
-- Monitor progress using the progress bar
-- Cancel and split the PDF if necessary
-
-#### ❌ Download button is disabled
-
-**Solution:**
-- Ensure a PDF file has been loaded
-- Check if the PDF loaded successfully (thumbnails should be visible)
-
-#### ❌ Language not switching
-
-**Solution:**
-- Refresh the page
-- Check if JavaScript is enabled
-- Clear browser cache and try again
-- Check browser console for errors (F12)
-
-### Debugging Methods
-
-If problems persist, check details in the browser's developer tools:
-
-1. Press **F12** to open developer tools
-2. Select **Console** tab
-3. Check error messages
-4. Look for any red error messages or warnings
-
-## FAQ
-
-### Q1: Is this tool safe?
-
-**A:**  
-Yes, it is safe. All processing is completed within the browser, and PDF files are not sent over the internet. However, it is recommended to use in a trusted environment (your own PC, trusted browser).
-
-### Q2: Is an internet connection required?
-
-**A:**  
-Partially. Initial loading requires internet to fetch PDF.js worker from CDN. However, if you download all libraries locally and update the URLs, it can work completely offline.
-
-### Q3: How large PDF files can be processed?
-
-**A:**  
-It depends on browser memory, but 50MB or less per PDF is recommended. Larger files may take longer to process or cause memory shortage errors.
-
-### Q4: Are the original PDF files modified?
-
-**A:**  
-No, they are not modified. The edited PDFs are saved as new files, and the original files remain unchanged.
-
-### Q5: Can I work with more than 2 PDFs?
-
-**A:**  
-The current version supports 2 PDFs at a time. To work with more files, you can load different PDFs after downloading your edits.
-
-### Q6: Can I use this on mobile devices?
-
-**A:**  
-The application can load on mobile devices, but the drag-and-drop functionality and overall user experience are optimized for desktop use. A mouse or trackpad is recommended.
-
-### Q7: Does PDF quality degrade?
-
-**A:**  
-Basically, it does not degrade. pdf-lib maintains original PDF quality, but some metadata, forms, or annotations may be lost during the process.
-
-### Q8: Can I edit password-protected PDFs?
-
-**A:**  
-No, you cannot. For password-protected or edit-restricted PDFs, first remove the protection before editing.
-
-### Q9: Can I use this commercially?
-
-**A:**  
-Yes, you can. Distributed under MIT License, it can be freely used for both commercial and non-commercial purposes.
-
-### Q10: How do I reorder pages within a PDF?
-
-**A:**  
-Simply drag and drop page thumbnails within the same panel. The pages will be reordered based on where you drop them.
-
-### Q11: Can I undo operations?
-
-**A:**  
-The current version does not have an undo feature. To revert changes, simply reload the original PDF file. Remember that changes are not saved until you click the download button.
-
-### Q12: Why does the progress bar show when downloading?
-
-**A:**  
-PDF generation can take time, especially for large files. The progress bar shows how many pages have been processed and allows you to cancel if needed. This prevents the browser from appearing frozen.
-
-### Q13: What happens if I close the browser during PDF generation?
-
-**A:**  
-The operation will be interrupted, and no file will be downloaded. The original PDFs remain unchanged. You can safely reload the page and try again.
-
-### Q14: How do I switch languages?
-
-**A:**  
-Click the language toggle switch in the top-right corner of the application. The interface immediately switches between Japanese and English. Your preference is saved automatically.
-
-### Q15: What gets translated when I switch languages?
-
-**A:**  
-Everything! All buttons, labels, status messages, page indicators, modal content, progress bar text, error messages, and help text are translated. Even the page thumbnails update to show "L/R" in English or "左/右" in Japanese.
-
-### Q16: Will my language preference be remembered?
-
-**A:**  
-Yes, your language selection is saved in your browser's local storage. When you return to the application, it will automatically use your preferred language.
-
-### Q17: Can I add more languages?
-
-**A:**  
-The current version supports Japanese and English. To add more languages, you would need to modify the translation dictionary in the JavaScript file. The system is designed to be extensible for additional languages.
-
-### Q18: Should I use the HTML version or PHP version?
-
-**A:**  
-- **Use HTML version (PDF-Editor.html)** if:
-  - You want to use it locally on your computer
-  - You don't have access to a web server
-  - You need a simple, standalone tool
-  - You're testing or developing
-
-- **Use PHP version (index.php)** if:
-  - You're deploying on a web server
-  - You need centralized configuration management
-  - You want enhanced security features (access control, security headers)
-  - You need to customize file size limits or other settings
-  - You're using this in a production environment
-
-Both versions have identical PDF editing functionality - the PHP version just adds configuration and security features.
-
-### Q19: What is config.php and do I need it?
-
-**A:**  
-`config.php` is the configuration file for the PHP version. It contains application settings like file size limits, allowed file types, and security configurations. You only need it if you're using `index.php`. If you're using the standalone HTML version (`PDF-Editor.html`), you don't need config.php.
-
-### Q20: Why can't I access config.php directly?
-
-**A:**  
-This is intentional and a security feature. The `.htaccess` file blocks direct access to `config.php` to prevent unauthorized users from viewing your configuration settings. This is a best practice for web applications. The file is only accessible by the PHP application itself.
-
-### Q21: How do I change the maximum file size limit in PHP version?
-
-**A:**  
-Edit `config.php` and change the `MAX_FILE_SIZE` constant:
-
-```php
-// Default: 50MB
-define('MAX_FILE_SIZE', 50 * 1024 * 1024);
-
-// To change to 100MB:
-define('MAX_FILE_SIZE', 100 * 1024 * 1024);
-```
-
-You may also need to adjust PHP and Apache settings in `.htaccess` or `php.ini` if the new limit exceeds server defaults.
-
-### Q22: Do I need to install Tailwind CSS separately?
-
-**A:**  
-No installation is required if:
-- The `css/tailwind.css` file is included in your download
-- OR if the HTML file loads Tailwind via CDN (check for `<link>` tags pointing to a CDN)
-
-If you want to customize Tailwind or build a smaller custom version:
-1. Visit [Tailwind CSS documentation](https://tailwindcss.com/docs/installation)
-2. Follow the installation guide for your preferred method
-3. Build a custom version containing only the utilities you need
-4. Replace the existing `tailwind.css` file with your custom build
-
-For most users, the included Tailwind CSS file is sufficient and requires no additional setup.
-
-### Q23: Can I use the application without Tailwind CSS?
-
-**A:**  
-While Tailwind CSS provides utility classes for responsive design and layout, the core PDF editing functionality does not strictly depend on it. However, removing Tailwind CSS will affect the visual appearance and responsive behavior of the interface. If you remove it, you may need to add custom CSS to maintain proper styling.
-
-## License
-
-```
-MIT License
-
-Copyright (c) 2025 Presire
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-## 🔗 Related Links
-
-- [PDF.js Documentation](https://mozilla.github.io/pdf.js/)
-- [pdf-lib Documentation](https://pdf-lib.js.org/)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [MDN Web Docs - Drag and Drop API](https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API)
-- [MDN Web Docs - Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
-- [MDN Web Docs - LocalStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
+🌏 **Languages**: English (this file) | [日本語](README_JP.md)
 
 ---
 
-**Last Updated**: December 2025  
-**Version**: 0.3.0 (Visual Editor with i18n Support)
+## 📋 Features
+
+### PDF Editing
+- **Two-pane layout** for editing two PDFs simultaneously
+- **Drag & drop reordering** within the same PDF
+- **Drag & drop copy** between PDFs
+- **Right-click menu** for page deletion
+- **Click-to-zoom** preview of any page
+- **"Moved" / "Copied" markers** make edit state immediately visible
+- **Per-pane download** of edited PDFs
+- **Progress bar with cancel** for large jobs
+
+### Password-Protected PDFs
+- Automatic detection of password-protected PDFs
+- Password input modal
+- Server-side decryption via `qpdf` (the rest of the editing flow is unchanged)
+
+### Internationalization / UI
+- **Japanese / English toggle** (header switch)
+- "How to use" guide modal
+- Responsive layout
+
+### Operations
+- Optional **upload history logging to AWS DynamoDB** (server-side)
+
+---
+
+## 🏗 Architecture
+
+```
+┌──────────────────────────────────────────────────────┐
+│ Browser                                              │
+│  ├─ index.php (HTML rendering + CSRF token issue)    │
+│  ├─ PDF-Editor.js (UI logic / editing)               │
+│  ├─ pdf.js / pdf-lib (PDF rendering & rebuild)       │
+│  ├─ dynamodb-integration.js (log-upload client)      │
+│  └─ qpdf-integration.js (decryption client)          │
+└──────────────────────────────────────────────────────┘
+                  │ HTTPS + CSRF token
+                  ▼
+┌──────────────────────────────────────────────────────┐
+│ Web server (Apache + PHP)                            │
+│  ├─ save-pdf-log.php  (log-write API)                │
+│  ├─ decrypt-pdf.php   (qpdf decryption API)          │
+│  ├─ security-helpers.php (CSRF / CORS / rate limit)  │
+│  ├─ aws-config.php / dynamodb-client.php             │
+│  └─ qpdf binary (qpdf/bin/qpdf)                      │
+└──────────────────────────────────────────────────────┘
+                  │
+                  ▼
+       ┌─────────────────────────┐
+       │ AWS DynamoDB            │
+       │  PDFUploadLogs table    │
+       └─────────────────────────┘
+```
+
+PDF data itself is processed entirely in the browser and never sent to the server. The only server interactions are:
+
+1. **Recording metadata** (filename, page count, etc.) to DynamoDB (`save-pdf-log.php`)
+2. **Decrypting password-protected PDFs** when needed (`decrypt-pdf.php`)
+
+---
+
+## 🚀 Setup
+
+### Requirements
+
+| Item | Requirement |
+|---|---|
+| PHP | 7.4 or later |
+| Web server | Apache 2.4 recommended (`mod_rewrite`, `mod_headers` enabled) |
+| Transport | HTTPS (HSTS / Secure cookie assumed) |
+| Browser | Latest Chrome / Firefox / Safari / Edge |
+| qpdf | Required for password-protected PDFs (`qpdf/bin/qpdf` or system PATH) |
+| AWS | DynamoDB table and IAM user access key (only if logging is used) |
+
+### Installation
+
+#### 1. Place files in the web root
+
+```bash
+sudo cp -r pdf /var/www/html/
+```
+
+#### 2. Set permissions
+
+```bash
+find /var/www/html/pdf -type d -exec chmod 755 {} \;
+find /var/www/html/pdf -type f -exec chmod 644 {} \;
+chmod 755 /var/www/html/pdf/qpdf/bin/qpdf
+```
+
+#### 3. Place AWS credentials outside the web root
+
+`aws-config.php` reads AWS CLI–format credential files **two directories above** the web root.
+
+```bash
+# Example: web root is /var/www/html/pdf → /var/www/credentials, /var/www/config
+chmod 600 /var/www/credentials /var/www/config
+```
+
+`credentials`:
+```ini
+[default]
+aws_access_key_id = AKIAxxxxxxxxxxxxxxxx
+aws_secret_access_key = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+`config`:
+```ini
+[default]
+region = us-east-1
+output = json
+```
+
+> ⚠️ Make sure no full-width (Unicode) spaces sneak into the values. AWS Signature V4 will fail if they do.
+
+See [`docs/AWS_SETUP.md`](docs/AWS_SETUP.md) for the full procedure.
+
+#### 4. Create the DynamoDB table and grant IAM permissions
+
+```bash
+aws dynamodb create-table \
+  --table-name PDFUploadLogs \
+  --attribute-definitions AttributeName=id,AttributeType=S \
+  --key-schema AttributeName=id,KeyType=HASH \
+  --billing-mode PAY_PER_REQUEST \
+  --region us-east-1
+```
+
+Attach a least-privilege policy (only `dynamodb:PutItem`) to the IAM user. See `docs/AWS_SETUP.md`.
+
+#### 5. Open in a browser
+
+```
+https://your-domain.example.com/pdf/
+```
+
+---
+
+## ⚙️ Configuration
+
+All key settings live in [`config.php`](config.php).
+
+### Application
+
+| Constant | Purpose |
+|---|---|
+| `APP_TITLE` | Page title |
+| `APP_VERSION` | Version string |
+| `ENABLE_DEBUG` | Debug mode (must be `false` in production) |
+
+### Security / transport
+
+| Constant | Purpose | Default |
+|---|---|---|
+| `MAX_FILE_SIZE` | Maximum upload size | `50 * 1024 * 1024` (50 MB) |
+| `ALLOWED_EXTENSIONS` | Allowed file extensions | `['pdf']` |
+| `ALLOWED_MIME_TYPES` | Allowed MIME types | `['application/pdf']` |
+| `ALLOWED_ORIGINS` | Allowed origins for CORS / Origin checks | `[]` (defaults to request host) |
+| `MAX_JSON_PAYLOAD` | Maximum JSON payload size in bytes | `4096` |
+
+### Rate limiting
+
+| Constant | Purpose | Default |
+|---|---|---|
+| `RATE_LIMIT_LOG_REQUESTS` | Allowed requests for the log API | `20` |
+| `RATE_LIMIT_LOG_WINDOW` | Window for the log API (seconds) | `60` |
+| `RATE_LIMIT_DECRYPT_REQUESTS` | Allowed requests for the decrypt API | `10` |
+| `RATE_LIMIT_DECRYPT_WINDOW` | Window for the decrypt API (seconds) | `300` |
+
+### AWS DynamoDB
+
+| Constant | Purpose | Default |
+|---|---|---|
+| `DYNAMODB_TABLE_LOG` | Table name for upload logs | `'PDFUploadLogs'` |
+
+### Apache settings
+
+[`.htaccess`](.htaccess) controls:
+- HTTPS forced redirect
+- HSTS / CSP / X-Frame-Options / X-Content-Type-Options / Referrer-Policy / Permissions-Policy / COOP / CORP
+- Direct-access denial for sensitive files
+- Session cookie security flags
+- gzip compression / cache control
+
+---
+
+## 📁 File Layout
+
+```
+pdf/
+├── index.php                 # Main HTML entry point (issues CSRF token)
+├── config.php                # Application configuration (constants)
+├── .htaccess                 # Apache config / security headers
+├── .gitignore
+│
+├── security-helpers.php      # CSRF / Origin / rate limit / sanitization
+├── aws-config.php            # AWS credentials loader (INI parser)
+├── dynamodb-client.php       # DynamoDB client (PutItem only)
+├── save-pdf-log.php          # Log-save API (POST /save-pdf-log.php)
+├── decrypt-pdf.php           # PDF password-removal API (POST /decrypt-pdf.php)
+├── diagnose.php              # CLI-only diagnostic script (delete after rollout)
+│
+├── PDF-Editor.html           # Pre-PHP original HTML version (kept for reference)
+│
+├── css/
+│   ├── PDF-Editor.css        # Main stylesheet
+│   └── tailwind.css
+│
+├── js/
+│   ├── PDF-Editor.js         # Main UI logic
+│   ├── dynamodb-integration.js  # Log uploader
+│   ├── qpdf-integration.js   # Decryption requester
+│   ├── pdf.min.js            # PDF.js (rendering)
+│   ├── pdf-lib.min.js        # pdf-lib (rebuild)
+│   └── pdf.worker.min.js
+│
+├── assets/                   # Icons, favicon, etc.
+├── img/
+├── qpdf/
+│   ├── bin/qpdf              # qpdf executable
+│   └── lib/                  # qpdf shared libraries
+│
+├── docs/
+│   └── AWS_SETUP.md          # AWS DynamoDB setup guide
+│
+├── LICENSE
+├── README.md                 # This file (English)
+└── README_JP.md              # Japanese README
+```
+
+---
+
+## 🔒 Security
+
+### Transport
+- **Forced HTTPS redirect** (`.htaccess`)
+- **HSTS**: `max-age=31536000; includeSubDomains`
+- **Same-origin enforcement** (`ALLOWED_ORIGINS` + `Origin` / `Referer` validation)
+- **CORS** is emitted dynamically and only for the same origin
+
+### CSRF
+- 32-byte random token per session
+- `index.php` exposes the token via `<meta name="csrf-token">`; JavaScript reads it and sends it as `X-CSRF-Token`
+- Validation uses `hash_equals()` (constant-time)
+
+### Sessions
+- `Secure` / `HttpOnly` / `SameSite=Strict` enforced
+- `session.use_strict_mode = 1`
+
+### Input validation
+- `Content-Type` enforcement
+- JSON payload size limit
+- Filename sanitization (NUL/control character stripping, path-separator neutralization)
+- Upload **MIME check + PDF magic bytes (`%PDF`)** check
+- Whitelist validation for parameters such as `side`
+- Password length cap (1024 B)
+
+### Rate limiting
+- Per IP, per endpoint
+- File-lock (`flock`) based counters
+
+### CSP (Content-Security-Policy)
+```
+default-src 'self';
+script-src 'self';
+style-src 'self' 'unsafe-inline';
+img-src 'self' data: blob:;
+worker-src 'self' blob:;
+object-src 'none';
+frame-ancestors 'self';
+form-action 'self';
+```
+
+### Error leakage prevention
+- Exception messages go only to `error_log()`; clients receive generic messages
+- Passwords and executed commands are never logged
+- No debug information is included in client responses
+
+### Sensitive-file protection
+- `aws-config.php`, `dynamodb-client.php`, `security-helpers.php`, `config.php`, `diagnose.php`, `credentials`, `.env`, etc. are denied direct access via `.htaccess`
+- AWS credentials are stored **outside the web root**
+
+---
+
+## 🔌 API Endpoints
+
+### `POST /save-pdf-log.php`
+
+Records upload metadata to DynamoDB.
+
+**Headers**:
+- `Content-Type: application/json`
+- `X-CSRF-Token: <session token>`
+
+**Request body**:
+```json
+{
+  "filename": "example.pdf",
+  "side": "left",
+  "num_pages": 12
+}
+```
+
+**Response (success)**:
+```json
+{
+  "success": true,
+  "message": "PDF upload log saved successfully",
+  "data": {
+    "id": "1740000000-abcdef0123456789",
+    "filename": "example.pdf",
+    "upload_time": "2026-04-29 10:00:00",
+    "side": "left",
+    "num_pages": 12
+  }
+}
+```
+
+**HTTP status codes**:
+| Code | Meaning |
+|---|---|
+| 200 | Success |
+| 400 | Invalid input |
+| 403 | Origin / CSRF rejected |
+| 405 | Method not allowed |
+| 413 | Payload too large |
+| 415 | Unsupported `Content-Type` |
+| 429 | Rate limit exceeded |
+| 500 | Server-side error (e.g. AWS misconfiguration) |
+
+### `POST /decrypt-pdf.php`
+
+Removes password protection using qpdf and returns the result.
+
+**Form fields (`multipart/form-data`)**:
+- `pdf`: PDF file
+- `password`: Password (empty string allowed)
+
+**Headers**: `X-CSRF-Token: <session token>`
+
+**Response (success)**:
+```json
+{
+  "success": true,
+  "message": "PDF decrypted successfully",
+  "data": {
+    "pdf_data": "<base64>",
+    "size": 12345
+  }
+}
+```
+
+---
+
+## 🎮 Usage
+
+### Loading PDFs
+- Click **"Choose file"** or **drag & drop** onto the upload area
+- Each pane can hold a different PDF
+- Password-protected PDFs trigger a password modal
+
+### Page operations
+
+| Action | How |
+|---|---|
+| Reorder (within a PDF) | Drag a thumbnail and drop within the same pane |
+| Copy to the other PDF | Drag a thumbnail and drop on the opposite pane |
+| Delete | **Right-click** a thumbnail → "🗑️ Delete page" |
+| Zoom preview | Click a thumbnail |
+| Cancel | `ESC` (closes modals / progress bar) |
+
+### Markers
+- **"Moved"** (blue): Pages moved away from their original loaded position. The marker is removed automatically when the page returns to its original slot.
+- **"Copied"** (green): Pages copied from another PDF. Shown permanently.
+
+### Download
+- Click **"💾 Download PDF"** under each pane
+- A progress bar tracks the export. `ESC` or "✕ Cancel" aborts the operation.
+
+---
+
+## 🔧 Troubleshooting
+
+### `save-pdf-log.php 500 (Internal Server Error)`
+
+Details are written to the server's `error_log()`. Also see the troubleshooting section in `docs/AWS_SETUP.md`.
+
+A CLI diagnostic script is available:
+
+```bash
+php diagnose.php
+```
+
+Common causes:
+- AWS credential issues (full-width spaces, missing files, wrong permissions)
+- IAM user lacks `dynamodb:PutItem`
+- DynamoDB table missing or in a different region
+
+### `decrypt-pdf.php` errors
+- `qpdf` not found: Verify execute permissions on `qpdf/bin/qpdf`, or check `which qpdf`
+- Wrong password: User can retry from the client modal
+- File too large: Check `MAX_FILE_SIZE` in `config.php` and `upload_max_filesize` / `post_max_size` in `.htaccess`
+
+### `403 (Forbidden)` in the browser
+- Session expired → reload the page (a new CSRF token is issued)
+- `ALLOWED_ORIGINS` does not match the actual host
+
+### `429 (Too Many Requests)`
+- Rate limit hit. Wait the duration in the `Retry-After` header
+- Adjust `RATE_LIMIT_*` in `config.php` if needed
+
+### CSP violation blocks resources
+- Check the browser console for "Refused to load…"
+- For external CDNs, add the appropriate directive in `.htaccess`'s `Content-Security-Policy`
+
+---
+
+## 🧪 For Developers
+
+### CLI diagnostics
+
+```bash
+php diagnose.php
+```
+
+Reports credential file presence and readability, key lengths, hidden-character detection, and an end-to-end DynamoDB `PutItem` test in a single command.
+
+> ⚠️ **Delete `diagnose.php` after verification.** `.htaccess` already blocks web access, but the file should not be left on a production server.
+
+### Debug mode
+Setting `ENABLE_DEBUG = true` in `config.php` enables PHP error display. Always revert to `false` in production.
+
+### Syntax checks
+
+```bash
+php -l <file.php>
+node -c <file.js>
+```
+
+---
+
+## 📜 License
+
+This project is released under the **MIT License**. See [`LICENSE`](LICENSE) for details.
+
+---
+
+## 🤝 Contributing
+
+Please report bugs and request features via GitHub Issues.
