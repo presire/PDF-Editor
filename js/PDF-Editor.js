@@ -12,6 +12,7 @@ let contextMenuTarget = null;
 // この変数がtrueになると、PDF生成処理が中断されます
 // まるで信号機のように、「進め（false）」か「止まれ（true）」かを示す役割を持ちます
 let pdfGenerationCancelled = false;
+let currentXhr = null;
 
 // PDF読み込みのキャンセルフラグ（左右のPDF用）
 let pdfLoadingCancelled = [false, false];
@@ -114,10 +115,7 @@ function updateProgress(current, total) {
 function hideProgress() {
     const overlay = document.getElementById('progressOverlay');
 
-    // ESCキーのイベントリスナーを削除
-    // プログレスバーが表示されていないときにESCキーを押しても、
-    // キャンセル処理が実行されないようにするための重要な処理です
-    // これは、まるでテレビを消したときにリモコンの電池を抜くようなものです
+    currentXhr = null;
     document.removeEventListener('keydown', handleEscapeKey);
 
     // キャンセルボタンの状態を初期化（次回のPDF生成のために）
@@ -141,10 +139,12 @@ function hideProgress() {
 // PDF生成をキャンセルする関数
 // キャンセルボタンがクリックされたとき、またはESCキーが押されたときに呼び出されます
 function cancelProgress() {
-    // キャンセルフラグをtrueに設定
-    // この変数がtrueになると、PDF生成処理のループがこれをチェックして、
-    // 次のページの処理を始めずに中断します
     pdfGenerationCancelled = true;
+
+    if (currentXhr) {
+        currentXhr.abort();
+        currentXhr = null;
+    }
 
     // プログレスバーのタイトルを変更して、キャンセル中であることを視覚的に示す
     const titleElement = document.getElementById('progressTitle');
@@ -1155,11 +1155,11 @@ async function assemblePDFWithQpdf(pages, pdfNumber) {
 
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
+        currentXhr = xhr;
         xhr.open('POST', 'assemble-pdf.php');
         xhr.setRequestHeader('X-CSRF-Token', csrfToken);
         xhr.withCredentials = true;
 
-        // アップロード進捗（0〜90%にマッピング）
         xhr.upload.onprogress = (e) => {
             if (e.lengthComputable) {
                 const uploadPercent = Math.round((e.loaded / e.total) * 90);
@@ -1169,7 +1169,6 @@ async function assemblePDFWithQpdf(pages, pdfNumber) {
             }
         };
 
-        // アップロード完了 → サーバー処理中（90%で待機）
         xhr.upload.onload = () => {
             barFill.style.width = '90%';
             text.textContent = '90%';
@@ -1177,6 +1176,7 @@ async function assemblePDFWithQpdf(pages, pdfNumber) {
         };
 
         xhr.onload = () => {
+            currentXhr = null;
             barFill.style.width = '100%';
             text.textContent = '100%';
 
@@ -1200,8 +1200,19 @@ async function assemblePDFWithQpdf(pages, pdfNumber) {
             }
         };
 
-        xhr.onerror = () => reject(new Error('Network error'));
-        xhr.ontimeout = () => reject(new Error('Request timeout'));
+        xhr.onabort = () => {
+            currentXhr = null;
+            reject(new Error('cancelled'));
+        };
+
+        xhr.onerror = () => {
+            currentXhr = null;
+            reject(new Error('Network error'));
+        };
+        xhr.ontimeout = () => {
+            currentXhr = null;
+            reject(new Error('Request timeout'));
+        };
 
         xhr.send(formData);
     });
@@ -1295,12 +1306,18 @@ async function downloadPDF(pdfNumber) {
 
         let blob;
 
-        // まずqpdfサーバー側組み立てを試行
         try {
             blob = await assemblePDFWithQpdf(pages, pdfNumber);
-            console.log('✅ qpdfでPDF組み立てに成功しました');
+            console.log('qpdfでPDF組み立てに成功しました');
         } catch (qpdfError) {
-            console.warn('⚠️ qpdf組み立て失敗、pdf-libにフォールバック:', qpdfError);
+            if (qpdfError.message === 'cancelled' || pdfGenerationCancelled) {
+                console.log('PDF生成がユーザーによってキャンセルされました');
+                hideProgress();
+                showStatus(`${sideLabel}${getTranslation('cancelled')}`, 'info', 3000);
+                return;
+            }
+
+            console.warn('qpdf組み立て失敗、pdf-libにフォールバック:', qpdfError);
             blob = await assemblePDFWithPdfLib(pages, updateProgress);
 
             if (blob === null) {
@@ -1309,6 +1326,12 @@ async function downloadPDF(pdfNumber) {
                 showStatus(`${sideLabel}${getTranslation('cancelled')}`, 'info', 3000);
                 return;
             }
+        }
+
+        if (pdfGenerationCancelled) {
+            hideProgress();
+            showStatus(`${sideLabel}${getTranslation('cancelled')}`, 'info', 3000);
+            return;
         }
 
         const url = URL.createObjectURL(blob);
